@@ -1,0 +1,34 @@
+version: '3.3'
+
+networks:
+  influxdb-net:
+    external:
+      name: influxdb-net
+  nsq-net:
+    external:
+      name: nsq-net
+
+secrets:
+  sensiot.json:
+    external: true
+
+services:
+  influxdb_writer:
+    image: "{IMAGE}"
+    networks:
+      influxdb-net:
+      nsq-net:
+    environment:
+      CONFIG: /run/secrets/sensiot.json
+      SERVICE: "influxdb_writer"
+    tty: true
+    secrets:
+      - sensiot.json
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      placement:
+        constraints:
+          - node.role == manager

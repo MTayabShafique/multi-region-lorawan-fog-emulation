@@ -1,0 +1,10 @@
+global:
+  scrape_interval:     15s
+  evaluation_interval: 15s
+  external_labels:
+      monitor: 'SENSIOT'
+scrape_configs:
+  - job_name: 'sensiot'
+    scrape_interval: 60s
+    static_configs:
+         - targets: ['prometheus_writer:8971']

@@ -1,0 +1,112 @@
+version: 2
+defaults: &defaults
+  working_directory: ~/The-SENSIOT-Framework
+  machine: true
+
+jobs:
+  build_amd64:
+    <<: *defaults
+    steps:
+      - checkout
+      - run:
+          name: Build image for amd64
+          command: make ARCHITECTURES=amd64
+      - run:
+          name: Test image for amd64
+          command: make ARCHITECTURES=amd64 test
+      - deploy:
+          name: Push image for amd64 to dockerhub
+          command: make ARCHITECTURES=amd64 push
+  build_i386:
+    <<: *defaults
+    steps:
+      - checkout
+      - run:
+          name: Build image for i386
+          command: make ARCHITECTURES=i386
+      - run:
+          name: Test image for i386
+          command: make ARCHITECTURES=i386 test
+      - deploy:
+          name: Push image for i386 to dockerhub
+          command: make ARCHITECTURES=i386 push
+  build_arm32v6:
+    <<: *defaults
+    steps:
+      - checkout
+      - run:
+          name: Build image for arm32v6
+          command: make ARCHITECTURES=arm32v6
+      - run:
+          name: Test image for arm32v6
+          command: make ARCHITECTURES=arm32v6 test
+      - deploy:
+          name: Push image for arm32v6 to dockerhub
+          command: make ARCHITECTURES=arm32v6 push
+  build_arm64v8:
+    <<: *defaults
+    steps:
+      - checkout
+      - run:
+          name: Build image for arm64v8
+          command: make ARCHITECTURES=arm64v8
+      - run:
+          name: Test image for arm64v8
+          command: make ARCHITECTURES=arm64v8 test
+      - deploy:
+          name: Push image for arm64v8 to dockerhub
+          command: make ARCHITECTURES=arm64v8 push
+  build_ppc64le:
+    <<: *defaults
+    steps:
+      - checkout
+      - run:
+          name: Build image for ppc64le
+          command: make ARCHITECTURES=ppc64le
+      - run:
+          name: Test image for ppc64le
+          command: make ARCHITECTURES=ppc64le test
+      - deploy:
+          name: Push image for ppc64le to dockerhub
+          command: make ARCHITECTURES=ppc64le push
+  manifest:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: make manifest
+  badge:
+    <<: *defaults
+    steps:
+      - run: curl -X POST https://hooks.microbadger.com/images/unibaub/sensiot/ETNeL3YrI5NlleXeeRO3M0-V1SM=
+
+tag_filter: &tag_filter
+  filters:
+    tags:
+      only: /.*/
+
+workflows:
+  version: 2
+  build-and-deploy:
+    jobs:
+      - build_amd64:
+          <<: *tag_filter
+      - build_i386:
+          <<: *tag_filter
+      - build_arm32v6:
+          <<: *tag_filter
+      - build_arm64v8:
+          <<: *tag_filter
+      - build_ppc64le:
+          <<: *tag_filter
+      - manifest:
+          requires:
+            - build_amd64
+            - build_i386
+            - build_arm32v6
+            - build_arm64v8
+            - build_ppc64le
+          <<: *tag_filter
+      - badge:
+          requires:
+            - manifest
+          <<: *tag_filter

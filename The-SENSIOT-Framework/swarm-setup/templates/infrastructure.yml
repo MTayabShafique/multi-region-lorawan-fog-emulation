@@ -1,0 +1,78 @@
+version: "3"
+
+networks:
+  traefik-net:
+    external:
+      name: traefik-net
+
+services:
+  traefik:
+    image: traefik
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    command: --web --docker --docker.swarmmode=true --docker.watch=true --docker.domain={DOMAIN} -l DEBUG
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "/dev/null:/traefik.toml"
+    networks:
+      - traefik-net
+    deploy:
+      placement:
+        constraints:
+          - node.role==manager
+      restart_policy:
+        condition: on-failure
+      labels:
+        traefik.backend: traefik
+        traefik.backend.loadbalancer.sticky: "true"
+        traefik.docker.network: "traefik-net"
+        traefik.frontend.entryPoints: "http"
+        trafik.frontend.passHostHeader: "true"
+        traefik.port: 8080
+        traefik.frontend.rule: "Host:traefik.{DOMAIN}"
+
+  visualizer:
+      image: dockersamples/visualizer
+      volumes:
+          - "/var/run/docker.sock:/var/run/docker.sock"
+      networks:
+          - traefik-net
+      deploy:
+          placement:
+              constraints:
+                  - node.role==manager
+          restart_policy:
+             condition: on-failure
+          labels:
+            traefik.backend: visualizer
+            traefik.backend.loadbalancer.sticky: "true"
+            traefik.docker.network: "traefik-net"
+            traefik.frontend.entryPoints: "http"
+            trafik.frontend.passHostHeader: "true"
+            traefik.port: 8080
+            traefik.frontend.rule: "Host:visualizer.{DOMAIN}"
+
+  portainer:
+      image: portainer/portainer
+      volumes:
+          - "/var/run/docker.sock:/var/run/docker.sock"
+          - "./data/prometheus:/data"
+      command: -H unix:///var/run/docker.sock
+      networks:
+          - traefik-net
+      deploy:
+          placement:
+              constraints:
+                  - node.role==manager
+          restart_policy:
+             condition: on-failure
+          labels:
+            traefik.backend: portainer
+            traefik.backend.loadbalancer.sticky: "true"
+            traefik.docker.network: "traefik-net"
+            traefik.frontend.entryPoints: "http"
+            trafik.frontend.passHostHeader: "true"
+            traefik.port: 9000
+            traefik.frontend.rule: "Host:portainer.{DOMAIN}"

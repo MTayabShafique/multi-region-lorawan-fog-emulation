@@ -1,0 +1,34 @@
+version: '3.3'
+
+networks:
+  prometheus-net:
+    external:
+      name: prometheus-net
+  nsq-net:
+    external:
+      name: nsq-net
+
+secrets:
+  sensiot.json:
+    external: true
+
+services:
+  prometheus_writer:
+    image: "{IMAGE}"
+    networks:
+      prometheus-net:
+      nsq-net:
+    environment:
+      CONFIG: /run/secrets/sensiot.json
+      SERVICE: "prometheus_writer"
+    tty: true
+    secrets:
+      - sensiot.json
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      placement:
+        constraints:
+          - node.role == manager

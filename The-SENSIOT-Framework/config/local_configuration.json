@@ -1,0 +1,22 @@
+{
+  "meta": {
+    "architecture": "amd64",
+    "device_id": "ChirpStackSimulatedDevice1"
+  },
+  "location": {
+    "building": "L9",
+    "room": "Living Room"
+  },
+  "local_sensors": {
+    "sensor_1": {
+      "sensor_id": "DevEUI1",
+      "type": "temperature_humidity",
+      "frequency": "5min"
+    },
+    "sensor_2": {
+      "sensor_id": "DevEUI2",
+      "type": "motion",
+      "frequency": "1min"
+    }
+  }
+}

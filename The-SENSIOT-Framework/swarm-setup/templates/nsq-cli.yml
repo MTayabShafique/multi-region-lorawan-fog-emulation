@@ -1,0 +1,21 @@
+version: '3.3'
+
+networks:
+  nsq-net:
+    external:
+      name: nsq-net
+
+services:
+  nsqcli:
+    image: unibaktr/nsq
+    command: ["nsq_tail","-lookupd-http-address","nsqlookupd:4161","-topic","sensor_data"]
+    networks:
+      nsq-net:
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      placement:
+        constraints:
+          - node.role == manager
