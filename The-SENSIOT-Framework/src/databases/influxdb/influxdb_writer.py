@@ -1,5 +1,7 @@
+import time
 import logging
 import threading
+from databases.influxdb.influxdb_converter import InfluxDBConverter
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 
@@ -67,44 +69,16 @@ class InfluxDBWriter(threading.Thread):
                 if not self.queue.empty():
                     payload = self.queue.get()
                     logger.debug(f"Retrieved payload from queue: {payload}")
-                    influx_data = self.convert_to_influxdb_format(payload)
+                    influx_data = InfluxDBConverter.convert_to_influxdb_format(payload)
                     if influx_data:
                         logger.debug(f"Converted payload to InfluxDB format: {influx_data}")
                         self.write_to_influxdb(influx_data)
                     else:
                         logger.warning("Conversion returned no data")
                 else:
+                    time.sleep(0.5)
                     logger.debug("Queue is empty, waiting for data...")
             except Exception as e:
                 logger.error(f"Error processing data for InfluxDB: {e}")
 
         logger.info(f"Stopped: {self.name}")
-
-    def convert_to_influxdb_format(self, payload):
-        """Convert payload to InfluxDB Point format."""
-        try:
-            logger.debug(f"Converting payload: {payload}")
-            decoded_payload = payload.get("decodedPayload", "")
-
-            # Debug decoded payload
-            logger.debug(f"Decoded payload: {decoded_payload}")
-
-            fields = {
-                "temperature": float(decoded_payload.split(",")[1].split(":")[1].strip()),
-                "humidity": float(decoded_payload.split(",")[0].split(":")[1].strip())
-            }
-
-            # Debug extracted fields
-            logger.debug(f"Extracted fields - Temperature: {fields['temperature']}, Humidity: {fields['humidity']}")
-
-            # Create an InfluxDB Point
-            point = Point("sensor_data") \
-                .tag("device_eui", payload.get("devEUI")) \
-                .field("temperature", fields["temperature"]) \
-                .field("humidity", fields["humidity"]) \
-                .time(payload.get("timestamp"))  # Optional timestamp
-
-            return point
-        except Exception as e:
-            logger.error(f"Failed to convert payload to InfluxDB format: {e}")
-            return None

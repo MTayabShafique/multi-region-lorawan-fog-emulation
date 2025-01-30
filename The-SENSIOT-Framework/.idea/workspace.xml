@@ -8,9 +8,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="edd25f0f-2fbd-4370-a3b0-10ad51789c2a" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/sensiot.json" beforeDir="false" afterPath="$PROJECT_DIR$/config/sensiot.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/databases/influxdb/influxdb_converter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/databases/influxdb/influxdb_converter.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/databases/influxdb/influxdb_writer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/databases/influxdb/influxdb_writer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sensors/meta/data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/sensors/meta/data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utilities/local/metadata_appender.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/utilities/local/metadata_appender.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -36,7 +39,7 @@
     </option>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="CurrentFile" />
@@ -45,32 +48,33 @@
   &quot;associatedIndex&quot;: 4
 }</component>
   <component name="ProjectId" id="2rXw9NL0FutIYlsu4fXYUX7loNP" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Docker.Dockerfile.executor&quot;: &quot;Run&quot;,
-    &quot;Docker.docker-compose.yml.local_manager: Compose Deployment.executor&quot;: &quot;Run&quot;,
-    &quot;Docker.docker-compose.yml: Compose Deployment.executor&quot;: &quot;Run&quot;,
-    &quot;Python.manager.executor&quot;: &quot;Run&quot;,
-    &quot;Python.services.executor&quot;: &quot;Run&quot;,
-    &quot;Python.web.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;feature/3-configuring-services&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/tayyab/Thesis/code/The-SENSIOT-Framework/src/sensiot_memcache/meta&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Docker.Dockerfile.executor": "Run",
+    "Docker.docker-compose.yml.local_manager: Compose Deployment.executor": "Run",
+    "Docker.docker-compose.yml: Compose Deployment.executor": "Run",
+    "Python.manager.executor": "Run",
+    "Python.services.executor": "Run",
+    "Python.web.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "feature-3/influxdb-write",
+    "last_opened_file_path": "/home/tayyab/Thesis/code/The-SENSIOT-Framework/src/sensiot_memcache/meta",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "run.code.analysis.last.selected.profile": "pProject Default",
+    "settings.editor.selected.configurable": "project.propVCSSupport.DirectoryMappings",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/sensiot_memcache/meta" />
@@ -144,10 +148,10 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.manager" />
       <item itemvalue="Docker.Dockerfile" />
       <item itemvalue="Docker.docker-compose.yml: Compose Deployment" />
       <item itemvalue="Docker.docker-compose.yml.local_manager: Compose Deployment" />
+      <item itemvalue="Python.manager" />
     </list>
     <recent_temporary>
       <list>
@@ -193,6 +197,10 @@
       <workItem from="1738072503262" duration="3720000" />
       <workItem from="1738089064923" duration="2914000" />
       <workItem from="1738197488366" duration="139000" />
+      <workItem from="1738204734946" duration="61000" />
+      <workItem from="1738204858015" duration="207000" />
+      <workItem from="1738205114978" duration="451000" />
+      <workItem from="1738251536026" duration="4961000" />
     </task>
     <servers />
   </component>
@@ -209,6 +217,11 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <ignored-roots>
+      <path value="$PROJECT_DIR$" />
+    </ignored-roots>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/The_SENSIOT_Framework$services.coverage" NAME="services Coverage Results" MODIFIED="1737909945920" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
