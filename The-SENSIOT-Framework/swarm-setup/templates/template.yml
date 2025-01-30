@@ -1,0 +1,48 @@
+version: '3.3'
+
+# List of networks the service is connected to.
+# If this service reads or writes to nsq it must
+# be connected to 'nsq-net' for example.
+# Other possible networks are
+#   - sensiot_memcache-net
+#   - prometheus-net
+#   - influxdb-net
+#   - traefik-net
+networks:
+  <network name>:
+    external:
+      name: <network name>
+
+# If the service is configured through the
+# a Docker Secret the secret name must be
+# defined here depending on the secret holding
+# the configuration
+secrets:
+  <secret name>:
+    external: true
+
+# This service definition holds the name,
+# image, secret, environment variables
+# and deploy policies
+# Use image:"{IMAGE}" if the service uses
+# the SENSIOT image
+services:
+  <service name>:
+    image: "{IMAGE}"
+    networks:
+        <network name>
+        ...
+    environment:
+      CONFIG: /run/secrets/sensiot.json
+      SERVICE: <service name (used in services.py)>
+    tty: true
+    secrets:
+      - <secret name>
+    deploy:
+      restart_policy:
+          condition: on-failure
+          delay: 5s
+          max_attempts: 3
+      placement:
+        constraints:
+            - node.role == manager

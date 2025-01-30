@@ -1,0 +1,46 @@
+version: '3.3'
+
+networks:
+  influxdb-net:
+    external:
+      name: influxdb-net
+  traefik-net:
+    external:
+      name: traefik-net
+
+secrets:
+  grafana.ini:
+    external: true
+
+services:
+  grafana:
+    image: unibaktr/grafana
+    volumes:
+      - ./data/grafana:/var/lib/grafana
+    # TODO: https://github.com/grafana/grafana-docker/issues/51
+    # secrets:
+    #   - source: grafana.ini
+    #     target: /etc/grafana/grafana.ini
+    # Alternative:
+    env_file:
+      - config/grafana/grafana.env
+    networks:
+      traefik-net:
+      influxdb-net:
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      placement:
+        constraints:
+          - node.role == manager
+      labels:
+        traefik.backend: grafana
+        traefik.backend.loadbalancer.sticky: "true"
+        traefik.docker.network: "traefik-net"
+        traefik.enable: "true"
+        traefik.frontend.entryPoints: "http"
+        traefik.frontend.passHostHeader: "true"
+        traefik.frontend.rule: "Host:grafana.{DOMAIN}"
+        traefik.port: "3000"

@@ -1,0 +1,21 @@
+version: '3.3'
+
+networks:
+  memcache-net:
+    external:
+      name: sensiot_memcache-net
+
+services:
+  memcached:
+      image: memcached:latest
+      command: memcached -vv
+      networks:
+        memcache-net:
+      deploy:
+        restart_policy:
+            condition: on-failure
+            delay: 5s
+            max_attempts: 3
+        placement:
+          constraints:
+            - node.role == manager

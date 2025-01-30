@@ -1,0 +1,45 @@
+version: '3.3'
+
+networks:
+  traefik-net:
+    external:
+      name: traefik-net
+  prometheus-net:
+    external:
+      name: prometheus-net
+
+secrets:
+  prometheus.yml:
+    external: true
+
+services:
+  prometheus:
+    image: unibaktr/prometheus
+    volumes:
+      - ./data/prometheus:/etc/prometheus
+    command:
+      - '--config.file=/run/secrets/prometheus.yml'
+      - '--storage.tsdb.path=/etc/prometheus'
+      - '--storage.tsdb.retention=15d'
+    secrets:
+      - prometheus.yml
+    networks:
+      prometheus-net:
+      traefik-net:
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      placement:
+        constraints:
+          - node.role == manager
+      labels:
+        traefik.backend: prometheus
+        traefik.backend.loadbalancer.sticky: "true"
+        traefik.docker.network: "traefik-net"
+        traefik.enable: "true"
+        traefik.frontend.entryPoints: "http"
+        traefik.frontend.passHostHeader: "true"
+        traefik.frontend.rule: "Host:prometheus.{DOMAIN}"
+        traefik.port: "9090"

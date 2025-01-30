@@ -1,0 +1,175 @@
+version: '3.3'
+
+networks:
+  backend:
+
+services:
+  #############################
+
+  #############################
+  # Memcached Service         #
+  #############################
+  memcached:
+    image: memcached:latest
+    command: memcached -vv
+    restart: on-failure
+    networks:
+      backend:
+
+  #############################
+# InfluxDB Service          #
+#############################
+  influxdb:
+    image: influxdb:latest
+    restart: on-failure
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: root
+      DOCKER_INFLUXDB_INIT_PASSWORD: mystrongpassword123
+      DOCKER_INFLUXDB_INIT_ORG: sensiot_org
+      DOCKER_INFLUXDB_INIT_BUCKET: sensiot
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+    ports:
+      - "8086:8086"
+    networks:
+      backend:
+  #############################
+  # Chronograf UI             #
+  #############################
+  chronograf:
+    image: chronograf:latest
+    restart: on-failure
+    depends_on:
+      - influxdb
+    command: chronograf --influxdb-url=http://influxdb:8086
+    networks:
+      backend:
+    ports:
+      - "8888:8888"
+
+  #############################
+  # Grafana UI                #
+  #############################
+  grafana:
+    image: unibaktr/grafana
+    restart: on-failure
+    depends_on:
+      - prometheus
+    env_file:
+      - ./config/grafana/grafana.env
+    volumes:
+      - ./config/grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      backend:
+    ports:
+      - "3000:3000"
+
+  #############################
+  # Prometheus Service        #
+  #############################
+  prometheus:
+    image: unibaktr/prometheus
+    restart: on-failure
+    volumes:
+      - ./config/prometheus:/etc/prometheus/
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    networks:
+      backend:
+    ports:
+      - "9090:9090"
+
+  #############################
+  # Local Manager             #
+  #############################
+  local_manager:
+    image: sensiot_image
+    restart: on-failure
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./config/sensiot.json:/app/sensiot.json
+      - ./config/local_configuration.json:/etc/sensiot/local_configuration.json
+    networks:
+      backend:
+    tty: true
+    environment:
+      CONFIG: ./sensiot.json
+      SERVICE: "local_manager"
+
+  #############################
+  # Memcache Writer           #
+  #############################
+  json_memcache_writer:
+    image: sensiot_image
+    restart: on-failure
+    depends_on:
+      - memcached
+    volumes:
+      - ./config/sensiot.json:/app/sensiot.json
+    networks:
+      backend:
+    tty: true
+    environment:
+      CONFIG: ./sensiot.json
+      SERVICE: "sensor_data_memcache_writer"
+
+  #############################
+  # InfluxDB Writer           #
+  #############################
+  influxdb_writer:
+    image: sensiot_image
+    restart: on-failure
+    depends_on:
+      - influxdb
+    volumes:
+      - ./config/sensiot.json:/app/sensiot.json
+    networks:
+      backend:
+    tty: true
+    environment:
+      CONFIG: ./sensiot.json
+      SERVICE: "influxdb_writer"
+
+  #############################
+  # Prometheus Writer         #
+  #############################
+  prometheus_writer:
+    image: sensiot_image
+    restart: on-failure
+    depends_on:
+      - prometheus
+    volumes:
+      - ./config/sensiot.json:/app/sensiot.json
+    networks:
+      backend:
+    tty: true
+    environment:
+      CONFIG: ./sensiot.json
+      SERVICE: "prometheus_writer"
+    ports:
+      - "8000:8000"
+
+  #############################
+  # Web Interface             #
+  #############################
+  web:
+    image: sensiot_image
+    restart: on-failure
+    depends_on:
+      - memcached
+    volumes:
+      - ./config/sensiot.json:/app/sensiot.json
+    networks:
+      backend:
+    ports:
+      - "5001:5000"
+    tty: true
+    environment:
+      CONFIG: ./sensiot.json
+      SERVICE: "web"
+  ##############################
+  # Volumes                    #
+  ##############################
+volumes:
+    influxdb_data:  # Named volume for InfluxDB persistence

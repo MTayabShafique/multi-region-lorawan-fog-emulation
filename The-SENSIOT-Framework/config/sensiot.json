@@ -1,0 +1,59 @@
+{
+  "utilities": {
+    "logging": {
+      "level": "debug",
+     "format": "[%(name)s] %(asctime)s %(levelname)s: %(message)s",
+      "dateformat": "%Y/%m/%d %H:%M:%S",
+      "handlers": {
+        "streamhandler": {
+          "enabled": true
+        },
+        "graylog": {
+          "enabled": false,
+          "type": "tcp",
+          "host": "",
+          "port": 12202
+        }
+      }
+    }
+  },
+  "services": {
+    "mqtt": {
+      "broker": "chirpstack-docker_mosquitto_1",
+      "port": 1883,
+      "topics": {
+        "uplink_topic": "application/e5c81e6c-5f75-43c0-9f7d-13ad826e9185/device/+/event/up",
+        "downlink_topic_template": "application/{application_id}/device/{device_id}/command/down"
+      },
+      "connection": {
+        "username": "",
+        "password": "",
+        "keepalive": 60
+      }
+    },
+    "memcached": {
+      "ip": "memcached",
+      "port": 11211,
+      "connect_timeout": 180,
+      "timeout": 180,
+      "key_expiration": 600,
+      "noreply_flag": true
+    },
+    "influxdb_writer": {
+      "ip": "influxdb",
+      "port": 8086,
+      "token": "TP7AY_9YOYGHiTMyF26KH_CBPqmWVkRYQ6c_nsUwveu0sYdKA7jcigpnbLI63l8x26aldRfgV5TRcfMCKwFbtQ==",
+      "org": "sensiot_org",
+      "bucket": "sensiot",
+      "measurements": "Temperature & Humidity"
+    },
+    "prometheus_writer": {
+      "port": 8000
+    },
+    "web": {
+      "host": "0.0.0.0",
+      "port": 5000
+    }
+  }
+}
+

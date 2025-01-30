@@ -1,0 +1,34 @@
+version: '3.3'
+
+networks:
+  traefik-net:
+    external:
+      name: traefik-net
+  nsq-net:
+    external:
+      name: nsq-net
+
+services:
+  nsqadmin:
+    image: unibaktr/nsq
+    entrypoint: ["nsqadmin", "--lookupd-http-address=nsqlookupd:4161"]
+    networks:
+      traefik-net:
+      nsq-net:
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      placement:
+        constraints:
+          - node.role == manager
+      labels:
+        traefik.backend: nsqadmin
+        traefik.backend.loadbalancer.sticky: "true"
+        traefik.docker.network: "traefik-net"
+        traefik.enable: "true"
+        traefik.frontend.entryPoints: "http"
+        traefik.frontend.passHostHeader: "true"
+        traefik.frontend.rule: "Host:nsqadmin.{DOMAIN}"
+        traefik.port: "4171"

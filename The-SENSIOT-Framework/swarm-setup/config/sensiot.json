@@ -1,0 +1,84 @@
+{
+  "utilities": {
+    "logging": {
+      "level": "info",
+      "format": "[%(class)s] %(asctime)s %(levelname)s: %(message)s",
+      "dateformat": "%Y/%m/%d %H:%M:%S",
+      "handlers": {
+        "streamhandler": {
+          "enabled": true
+        },
+        "graylog": {
+          "enabled": false,
+          "type": "tcp",
+          "host": "",
+          "port": 12202
+        }
+      }
+    }
+  },
+  "services": {
+    "local_manager": {
+      "local_configuration": "/etc/sensiot/local_configuration.json",
+      "label": "sensiot-sensor-container",
+      "network_name": "nsq-net",
+      "global_sensors": {
+        "sensor_mock_1": {
+          "service": "temperature_humidity_sensor",
+          "type": "mock",
+          "image": "unibaub/sensiot",
+          "devices": [],
+          "command": "",
+          "configuration": {
+            "sensor_count": 5,
+            "temperature": 25.0,
+            "humidity": 62.0,
+            "interval": 60
+          }
+        }
+      }
+    },
+    "sensorlist": {
+      "interval": 300
+    },
+    "nsq": {
+      "nsqd": {
+        "ip": "nsqd",
+        "port": "4151",
+        "timeout": 60
+      },
+      "nsqlookupd": {
+        "ip": "nsqlookupd",
+        "port": "4161",
+        "interval": 30,
+        "timeout": 60
+      },
+      "topics": {
+        "data_topic": "sensor_data"
+      },
+      "connection":{
+        "timeout": 2,
+        "max_tries": 10
+      }
+    },
+    "memcached": {
+      "ip": "memcached",
+      "port": 11211,
+      "connect_timeout": 180,
+      "timeout": 180,
+      "key_expiration": 600,
+      "noreply_flag": true
+    },
+    "influxdb_writer": {
+      "ip": "influxdb",
+      "port": 8086,
+      "user": "root",
+      "password": "root",
+      "database": "sensiot",
+      "measurements": "Temperature & Humidity"
+    },
+    "prometheus_writer": {
+      "port": 8971
+    }
+  }
+}

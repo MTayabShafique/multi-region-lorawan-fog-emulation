@@ -1,0 +1,33 @@
+version: '3.3'
+
+networks:
+  nsq-net:
+    external:
+      name: nsq-net
+
+services:
+  nsqlookupd:
+    image: unibaktr/nsq
+    entrypoint: nsqlookupd
+    networks:
+      nsq-net:
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      placement:
+        constraints:
+          - node.role == manager
+
+  nsqd:
+    image: unibaktr/nsq
+    entrypoint: ["nsqd", "--lookupd-tcp-address=nsqlookupd:4160"]
+    networks:
+      nsq-net:
+    deploy:
+      mode: global
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3

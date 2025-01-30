@@ -1,0 +1,34 @@
+version: '3.3'
+
+networks:
+  memcache-net:
+    external:
+      name: sensiot_memcache-net
+  nsq-net:
+    external:
+      name: nsq-net
+
+secrets:
+  sensiot.json:
+    external: true
+
+services:
+  sensor_data_memcache_writer:
+    image: "{IMAGE}"
+    networks:
+      memcache-net:
+      nsq-net:
+    environment:
+      CONFIG: /run/secrets/sensiot.json
+      SERVICE: "sensor_data_memcache_writer"
+    tty: true
+    secrets:
+      - sensiot.json
+    deploy:
+      restart_policy:
+          condition: on-failure
+          delay: 5s
+          max_attempts: 3
+      placement:
+        constraints:
+          - node.role == manager

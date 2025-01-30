@@ -1,0 +1,42 @@
+version: '3.3'
+
+networks:
+  traefik-net:
+    external:
+      name: traefik-net
+  memcache-net:
+    external:
+      name: sensiot_memcache-net
+
+secrets:
+  sensiot.json:
+    external: true
+
+services:
+  web:
+    image: "{IMAGE}"
+    networks:
+      traefik-net:
+      memcache-net:
+    environment:
+      CONFIG: /run/secrets/sensiot.json
+      SERVICE: "web"
+    secrets:
+      - sensiot.json
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      placement:
+        constraints:
+          - node.role == manager
+      labels:
+        traefik.backend: web
+        traefik.backend.loadbalancer.sticky: "true"
+        traefik.docker.network: "traefik-net"
+        traefik.enable: "true"
+        traefik.frontend.entryPoints: "http"
+        traefik.frontend.passHostHeader: "true"
+        traefik.frontend.rule: "Host:web.{DOMAIN}"
+        traefik.port: "5000"

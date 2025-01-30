@@ -1,0 +1,36 @@
+version: '3.3'
+
+networks:
+  influxdb-net:
+    external:
+      name: influxdb-net
+  traefik-net:
+    external:
+      name: traefik-net
+
+services:
+  chronograf:
+    image: chronograf:latest
+    command: chronograf --influxdb-url=http://influxdb:8086
+    volumes:
+      - ./data/chronograf:/var/lib/chronograf
+    networks:
+      traefik-net:
+      influxdb-net:
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      placement:
+        constraints:
+          - node.role == manager
+      labels:
+        traefik.backend: chronograf
+        traefik.backend.loadbalancer.sticky: "true"
+        traefik.docker.network: "traefik-net"
+        traefik.enable: "true"
+        traefik.frontend.entryPoints: "http"
+        traefik.frontend.passHostHeader: "true"
+        traefik.frontend.rule: "Host:chronograf.{DOMAIN}"
+        traefik.port: "8888"

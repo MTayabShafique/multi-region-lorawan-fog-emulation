@@ -1,0 +1,34 @@
+version: '3.3'
+
+networks:
+  nsq-net:
+    external:
+      name: nsq-net
+
+secrets:
+  sensiot.json:
+    external: true
+
+services:
+  local_manager:
+    image: "{IMAGE}"
+    networks:
+      nsq-net:
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /etc/sensiot/local_configuration.json:/etc/sensiot/local_configuration.json:ro
+      - /etc/hostname:/etc/hostname:ro
+    environment:
+      CONFIG: /run/secrets/sensiot.json
+      SERVICE: "local_manager"
+    tty: true
+    secrets:
+      - sensiot.json
+    deploy:
+        mode: global
+        restart_policy:
+            delay: 5s
+        placement:
+            constraints:
+              - node.role == worker
+              - node.labels.type == sensor_device
