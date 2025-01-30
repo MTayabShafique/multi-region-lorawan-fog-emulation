@@ -1,6 +1,4 @@
 import json
-
-
 class Measurement:
     def __init__(self, id, type):
         self.data = {"sensor_id": id, "type": type, "measurements": []}

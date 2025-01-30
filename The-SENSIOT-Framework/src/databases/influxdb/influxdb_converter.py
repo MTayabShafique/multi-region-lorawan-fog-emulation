@@ -1,54 +1,38 @@
-import json
 import logging
+from influxdb_client import Point
 
+# Initialize the logger
 logger = logging.getLogger("sensiot")
-logger.setLevel(logging.INFO)
-
+logger.setLevel(logging.DEBUG)
 
 class InfluxDBConverter:
     @staticmethod
-    def convert(payload):
-        """
-        Converts payload to InfluxDB data point format.
-        :param payload: JSON string or dictionary
-        :return: List of InfluxDB data points or None if conversion fails
-        """
+    def convert_to_influxdb_format(payload):
+        """Convert payload to InfluxDB Point format."""
         try:
-            # Parse payload if it's a JSON string
-            if isinstance(payload, str):
-                payload = json.loads(payload)
+            logger.debug(f"Converting payload: {payload}")
+            decoded_payload = payload.get("decodedPayload", "")
 
-            if not isinstance(payload, dict):
-                raise ValueError("Payload must be a dictionary after parsing.")
+            # Debug decoded payload
+            logger.debug(f"Decoded payload: {decoded_payload}")
 
-            # Extract device EUI and decoded payload
-            dev_eui = payload.get("devEUI")
-            decoded_payload = payload.get("decodedPayload")
-            timestamp = payload.get("timestamp", None)
-
-            if not dev_eui or not decoded_payload:
-                raise ValueError("Invalid payload structure: Missing required keys.")
-
-            # Parse decoded payload for temperature and humidity
+            # Extract temperature and humidity from decoded payload
             fields = {
                 "temperature": float(decoded_payload.split(",")[1].split(":")[1].strip()),
-                "humidity": float(decoded_payload.split(",")[0].split(":")[1].strip()),
+                "humidity": float(decoded_payload.split(",")[0].split(":")[1].strip())
             }
 
-            # Create InfluxDB data point
-            point = {
-                "measurement": "sensor_data",
-                "tags": {"device_eui": dev_eui},
-                "fields": fields,
-                "time": timestamp,  # Optional timestamp
-            }
+            # Debug extracted fields
+            logger.debug(f"Extracted fields - Temperature: {fields['temperature']}, Humidity: {fields['humidity']}")
 
-            logger.info(f"Converted payload to InfluxDB format: {point}")
-            return [point]
+            # Create an InfluxDB Point
+            point = Point("sensor_data") \
+                .tag("device_eui", payload.get("devEUI")) \
+                .field("temperature", fields["temperature"]) \
+                .field("humidity", fields["humidity"]) \
+                .time(payload.get("timestamp"))  # Optional timestamp
 
-        except json.JSONDecodeError:
-            logger.error("Invalid JSON string provided.")
-            return None
+            return point
         except Exception as e:
-            logger.error(f"Failed to convert payload: {e}")
+            logger.error(f"Failed to convert payload to InfluxDB format: {e}")
             return None
