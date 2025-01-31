@@ -56,6 +56,7 @@ services:
     restart: on-failure
     depends_on:
       - prometheus
+      - influxdb
     env_file:
       - ./config/grafana/grafana.env
     volumes:
