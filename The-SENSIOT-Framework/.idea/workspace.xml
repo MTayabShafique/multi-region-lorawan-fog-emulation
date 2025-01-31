@@ -8,12 +8,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="edd25f0f-2fbd-4370-a3b0-10ad51789c2a" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/config/grafana/provisioning/datasources/influxdb.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/databases/influxdb/influxdb_converter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/databases/influxdb/influxdb_converter.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/databases/influxdb/influxdb_writer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/databases/influxdb/influxdb_writer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/sensors/meta/data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/sensors/meta/data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utilities/local/metadata_appender.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/utilities/local/metadata_appender.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/grafana/provisioning/dashboards/SENSIOT.json" beforeDir="false" afterPath="$PROJECT_DIR$/config/grafana/provisioning/dashboards/SENSIOT.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/grafana/provisioning/dashboards/dashboard.yml" beforeDir="false" afterPath="$PROJECT_DIR$/config/grafana/provisioning/dashboards/dashboard.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/databases/prometheus/prometheus_writer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/databases/prometheus/prometheus_writer.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,7 +63,7 @@
     "Python.web.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "feature-3/influxdb-write",
+    "git-widget-placeholder": "feature-4/SettingUp-Grafana",
     "last_opened_file_path": "/home/tayyab/Thesis/code/The-SENSIOT-Framework/src/sensiot_memcache/meta",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -200,7 +200,7 @@
       <workItem from="1738204734946" duration="61000" />
       <workItem from="1738204858015" duration="207000" />
       <workItem from="1738205114978" duration="451000" />
-      <workItem from="1738251536026" duration="4961000" />
+      <workItem from="1738251536026" duration="19343000" />
     </task>
     <servers />
   </component>

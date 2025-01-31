@@ -16,8 +16,8 @@ class PrometheusWriter(threading.Thread):
         self.port = int(self.config.get("port", 8000))
 
         # Prometheus Gauges for temperature and humidity
-        self.temperature_gauge = Gauge("sensor_temperature", "Temperature of sensors", ["device_id", "application_id"])
-        self.humidity_gauge = Gauge("sensor_humidity", "Humidity of sensors", ["device_id", "application_id"])
+        self.temperature_gauge = Gauge("sensor_temperature", "Temperature of sensors", ["device_id"])
+        self.humidity_gauge = Gauge("sensor_humidity", "Humidity of sensors", ["device_id"])
 
         logger.info(f"{self.name} initialized successfully on port {self.port}")
 
@@ -39,30 +39,49 @@ class PrometheusWriter(threading.Thread):
     def __process_data(self, payload):
         """
         Processes MQTT payload and updates Prometheus metrics.
-        :param payload: Raw payload from MQTT message (JSON format)
+        :param payload: Data structure from MQTT queue (contains devEUI and decodedPayload)
         :return: True if successful, False otherwise
         """
         try:
-            # Parse JSON payload
-            data = json.loads(payload)
-            device_id = data["devEUI"]
-            application_id = data.get("applicationID", "unknown_app")
-
-            # Extract sensor fields (temperature and humidity)
-            fields = data.get("objectJSON")
-            if fields is None:
-                logger.error("No objectJSON found in payload: {}".format(payload))
+            if not isinstance(payload, dict):
+                logger.error(f"Invalid payload format: {payload}")
                 return False
 
-            sensor_data = json.loads(fields)
-            temperature = sensor_data.get("temperature")
-            humidity = sensor_data.get("humidity")
+            device_id = payload.get("devEUI", "unknown_device")
+            decoded_payload = payload.get("decodedPayload", "")
+
+            if not decoded_payload:
+                logger.error(f"No decoded payload found for device {device_id}")
+                return False
+
+            # Convert `decodedPayload` into a structured `objectJSON`
+            sensor_data = {}
+            for entry in decoded_payload.split(", "):  # Example: "Humidity: 100, Temperature: 30"
+                key_value = entry.split(": ")
+                if len(key_value) == 2:
+                    key, value = key_value
+                    sensor_data[key.lower()] = float(value)  # Convert to float
+
+            # Simulating `objectJSON` structure
+            object_json = json.dumps(sensor_data)
+
+            # Load objectJSON safely
+            parsed_data = json.loads(object_json)
+
+            # Extract temperature and humidity
+            temperature = parsed_data.get("temperature")
+            humidity = parsed_data.get("humidity")
 
             # Update Prometheus Gauges
             if temperature is not None:
-                self.temperature_gauge.labels(device_id=device_id, application_id=application_id).set(temperature)
+                self.temperature_gauge.labels(device_id=device_id).set(temperature)
+            else:
+                logger.warning(f"Temperature missing in payload: {decoded_payload}")
+
             if humidity is not None:
-                self.humidity_gauge.labels(device_id=device_id, application_id=application_id).set(humidity)
+                self.humidity_gauge.labels(device_id=device_id).set(humidity)
+            else:
+                logger.warning(f"Humidity missing in payload: {decoded_payload}")
 
             return True
         except Exception as e:
