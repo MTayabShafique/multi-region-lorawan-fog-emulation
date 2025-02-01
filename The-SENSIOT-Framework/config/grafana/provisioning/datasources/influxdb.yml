@@ -9,6 +9,6 @@ datasources:
       organization: "sensiot_org"
       defaultBucket: "sensiot"
       tlsSkipVerify: true
-      httpMode: GET
+      httpMode: POST
     secureJsonData:
-      token: "TP7AY_9YOYGHiTMyF26KH_CBPqmWVkRYQ6c_nsUwveu0sYdKA7jcigpnbLI63l8x26aldRfgV5TRcfMCKwFbtQ=="
+      token: "T7mmwHXneh5BZxOBphX8lz0-2gRVVnJ29Q7KMUcIljvqKkpqyv5o71tgE304zVLuglK_RG7ePMA4yv_F_QPZlg=="

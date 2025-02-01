@@ -2,18 +2,6 @@
   "annotations": {
     "list": [
       {
-        "datasource": "InfluxDB",
-        "enable": true,
-        "hide": false,
-        "iconColor": "rgba(255, 96, 96, 1)",
-        "limit": 100,
-        "name": "",
-        "query": "from(bucket: \"sensiot\")   |> range(start: v.timeRangeStart, stop: v.timeRangeStop)   |> filter(fn: (r) => r[\"_measurement\"] == \"sensor_data\")   |> filter(fn: (r) => r[\"_field\"] == \"humidity\" or r[\"_field\"] == \"temperature\")   |> filter(fn: (r) => r[\"device_eui\"] == \"dcf069cccd8a91a2\")   |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)   |> yield(name: \"mean\")",
-        "showIn": 0,
-        "tags": [],
-        "type": "tags"
-      },
-      {
         "builtIn": 1,
         "datasource": "InfluxDB",
         "enable": true,
@@ -34,6 +22,13 @@
   "panels": [
     {
       "datasource": "InfluxDB",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
       "targets": [
         {
           "query": "from(bucket: \"sensiot\") |> range(start: -1h) |> filter(fn: (r) => r._measurement == \"sensor_data\" and r._field == \"temperature\")"
@@ -44,6 +39,13 @@
     },
     {
       "datasource": "InfluxDB",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 2,
       "targets": [
         {
           "query": "from(bucket: \"sensiot\") |> range(start: -1h) |> filter(fn: (r) => r._measurement == \"sensor_data\" and r._field == \"humidity\")"
@@ -64,7 +66,7 @@
     "list": []
   },
   "time": {
-    "from": "now-15m",
+    "from": "now-6h",
     "to": "now"
   },
   "timepicker": {
