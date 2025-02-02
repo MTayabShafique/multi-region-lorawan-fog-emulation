@@ -1,0 +1,22 @@
+version: '3.3'
+
+networks:
+  influxdb-net:
+    external:
+      name: influxdb-net
+
+services:
+  influxdb:
+    image: influxdb:latest
+    volumes:
+      - ./data/influxdb:/var/lib/influxdb
+    networks:
+      influxdb-net:
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      placement:
+        constraints:
+          - node.role == manager

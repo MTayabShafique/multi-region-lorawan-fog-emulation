@@ -1,0 +1,14 @@
+apiVersion: 1
+datasources:
+  - name: InfluxDB
+    type: influxdb
+    access: proxy
+    url: http://influxdb:8086
+    jsonData:
+      version: Flux
+      organization: "sensiot_org"
+      defaultBucket: "sensiot"
+      tlsSkipVerify: true
+      httpMode: POST
+    secureJsonData:
+      token: "T7mmwHXneh5BZxOBphX8lz0-2gRVVnJ29Q7KMUcIljvqKkpqyv5o71tgE304zVLuglK_RG7ePMA4yv_F_QPZlg=="

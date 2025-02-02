@@ -1,0 +1,68 @@
+#cloud-config
+hostname: {HOSTNAME}
+manage_etc_hosts: true
+
+users:
+  - name: {USER}
+    gecos: "{GECOS}"
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    home: {HOME}
+    shell: /bin/bash
+    groups: users,docker
+    lock_passwd: true
+    ssh-authorized-keys:
+      -
+
+
+package_upgrade: false
+packages:
+  - ca-certificates
+  - curl
+  - tmux
+  - vim
+
+runcmd:
+  - sed -i -e "s|#PasswordAuthentication yes|PasswordAuthentication no|g" /etc/ssh/sshd_config
+  - systemctl restart sshd.service
+
+  - sed -ie "s|Servers=.*||g" /etc/systemd/timesyncd.conf
+  - echo "Servers={TIMESERVER}" | sudo tee -a /etc/systemd/timesyncd.conf
+  - systemctl restart systemd-timesyncd.service
+
+  - sed -e "s|ExecStart=/usr/bin/dockerd.*|ExecStart=/usr/bin/dockerd|g" /lib/systemd/system/docker.service | sudo tee /etc/systemd/system/docker.service
+  - systemctl daemon-reload
+  - systemctl restart docker.service
+
+  - docker pull {IMAGE}
+  - docker pull {NSQ_IMAGE}
+
+  - docker swarm join --token  {SWARM_TOKEN} {SWARM_LEADER_IP}
+
+power_state:
+  mode: reboot
+  message: Bye Bye
+  condition: True
+  timeout: 1
+
+write_files:
+  - path: /etc/docker/daemon.json
+    content: |
+      {
+        "storage-driver":"overlay2",
+        "hosts":[
+          "unix:///var/run/docker.sock"
+        ]
+      }
+  - path: /etc/sensiot/local_configuration.json
+    content: |
+      {
+        "meta": {
+          "architecture": "{ARCHITECTURE}",
+          "device_id": "{DEVICE_ID}"
+        },
+        "location": {
+          "building": "{BUILDING}",
+          "room": "{ROOM}"
+        },
+        "local_sensors": {}
+      }
