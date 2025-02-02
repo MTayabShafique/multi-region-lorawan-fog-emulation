@@ -8,12 +8,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="edd25f0f-2fbd-4370-a3b0-10ad51789c2a" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/../Codec_Function.txt" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/grafana/grafana.env" beforeDir="false" afterPath="$PROJECT_DIR$/config/grafana/grafana.env" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/config/grafana/provisioning/dashboards/SENSIOT.json" beforeDir="false" afterPath="$PROJECT_DIR$/config/grafana/provisioning/dashboards/SENSIOT.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/config/grafana/provisioning/datasources/influxdb.yml" beforeDir="false" afterPath="$PROJECT_DIR$/config/grafana/provisioning/datasources/influxdb.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/sensiot_memcache/meta/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/sensiot_memcache/meta/client.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/web/web.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/web/web.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -202,7 +202,7 @@
       <workItem from="1738205114978" duration="451000" />
       <workItem from="1738251536026" duration="30595000" />
       <workItem from="1738358480336" duration="1997000" />
-      <workItem from="1738441394263" duration="987000" />
+      <workItem from="1738441394263" duration="10700000" />
     </task>
     <servers />
   </component>
@@ -224,6 +224,16 @@
     <ignored-roots>
       <path value="$PROJECT_DIR$" />
     </ignored-roots>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/web/web.py</url>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/The_SENSIOT_Framework$services.coverage" NAME="services Coverage Results" MODIFIED="1737909945920" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
