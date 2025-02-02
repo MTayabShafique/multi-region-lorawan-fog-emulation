@@ -8,12 +8,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="edd25f0f-2fbd-4370-a3b0-10ad51789c2a" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/The-SENSIOT-Framework.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/The-SENSIOT-Framework.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/grafana/grafana.env" beforeDir="false" afterPath="$PROJECT_DIR$/config/grafana/grafana.env" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/grafana/provisioning/dashboards/SENSIOT.json" beforeDir="false" afterPath="$PROJECT_DIR$/config/grafana/provisioning/dashboards/SENSIOT.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/grafana/provisioning/datasources/influxdb.yml" beforeDir="false" afterPath="$PROJECT_DIR$/config/grafana/provisioning/datasources/influxdb.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/web/web.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/web/web.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/sensiot.json" beforeDir="false" afterPath="$PROJECT_DIR$/config/sensiot.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -53,28 +51,28 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Docker.Dockerfile.executor&quot;: &quot;Run&quot;,
-    &quot;Docker.docker-compose.yml.local_manager: Compose Deployment.executor&quot;: &quot;Run&quot;,
-    &quot;Docker.docker-compose.yml: Compose Deployment.executor&quot;: &quot;Run&quot;,
-    &quot;Python.manager.executor&quot;: &quot;Run&quot;,
-    &quot;Python.services.executor&quot;: &quot;Run&quot;,
-    &quot;Python.web.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;feature-4/SettingUp-Grafana&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/tayyab/Thesis/code/The-SENSIOT-Framework/src/sensiot_memcache/meta&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;project.propVCSSupport.DirectoryMappings&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Docker.Dockerfile.executor": "Run",
+    "Docker.docker-compose.yml.local_manager: Compose Deployment.executor": "Run",
+    "Docker.docker-compose.yml: Compose Deployment.executor": "Run",
+    "Python.manager.executor": "Run",
+    "Python.services.executor": "Run",
+    "Python.web.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "feature-5/prometheus-grafana",
+    "last_opened_file_path": "/home/tayyab/Thesis/code/The-SENSIOT-Framework",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "run.code.analysis.last.selected.profile": "pProject Default",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/sensiot_memcache/meta" />
@@ -203,6 +201,7 @@
       <workItem from="1738251536026" duration="30595000" />
       <workItem from="1738358480336" duration="1997000" />
       <workItem from="1738441394263" duration="10700000" />
+      <workItem from="1738458422098" duration="3230000" />
     </task>
     <servers />
   </component>
