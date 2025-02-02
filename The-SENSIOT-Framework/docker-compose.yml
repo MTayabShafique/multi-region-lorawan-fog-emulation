@@ -52,7 +52,7 @@ services:
   # Grafana UI                #
   #############################
   grafana:
-    image: unibaktr/grafana
+    image: grafana/grafana:latest
     restart: on-failure
     depends_on:
       - prometheus

@@ -5,8 +5,6 @@ import threading
 from multiprocessing import Process
 from flask import Flask
 from flask_restful import Api, Resource
-from sensiot_memcache.meta.client import Client
-
 from web.resources.sensor_data import SensorData
 from web.resources.sensor_list import SensorList
 

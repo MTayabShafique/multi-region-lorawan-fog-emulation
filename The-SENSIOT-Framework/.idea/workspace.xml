@@ -8,12 +8,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="edd25f0f-2fbd-4370-a3b0-10ad51789c2a" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/config/grafana/provisioning/datasources/influxdb.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/The-SENSIOT-Framework.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/The-SENSIOT-Framework.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/grafana/provisioning/dashboards/SENSIOT.json" beforeDir="false" afterPath="$PROJECT_DIR$/config/grafana/provisioning/dashboards/SENSIOT.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/grafana/provisioning/dashboards/dashboard.yml" beforeDir="false" afterPath="$PROJECT_DIR$/config/grafana/provisioning/dashboards/dashboard.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/databases/prometheus/prometheus_writer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/databases/prometheus/prometheus_writer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/sensiot.json" beforeDir="false" afterPath="$PROJECT_DIR$/config/sensiot.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,15 +61,15 @@
     "Python.web.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "feature-4/SettingUp-Grafana",
-    "last_opened_file_path": "/home/tayyab/Thesis/code/The-SENSIOT-Framework/src/sensiot_memcache/meta",
+    "git-widget-placeholder": "feature-5/prometheus-grafana",
+    "last_opened_file_path": "/home/tayyab/Thesis/code/The-SENSIOT-Framework",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "run.code.analysis.last.selected.profile": "pProject Default",
-    "settings.editor.selected.configurable": "project.propVCSSupport.DirectoryMappings",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -200,7 +198,10 @@
       <workItem from="1738204734946" duration="61000" />
       <workItem from="1738204858015" duration="207000" />
       <workItem from="1738205114978" duration="451000" />
-      <workItem from="1738251536026" duration="19343000" />
+      <workItem from="1738251536026" duration="30595000" />
+      <workItem from="1738358480336" duration="1997000" />
+      <workItem from="1738441394263" duration="10700000" />
+      <workItem from="1738458422098" duration="3230000" />
     </task>
     <servers />
   </component>
@@ -222,6 +223,16 @@
     <ignored-roots>
       <path value="$PROJECT_DIR$" />
     </ignored-roots>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/web/web.py</url>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/The_SENSIOT_Framework$services.coverage" NAME="services Coverage Results" MODIFIED="1737909945920" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
