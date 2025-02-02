@@ -19,7 +19,7 @@
   },
   "services": {
     "mqtt": {
-      "broker": "chirpstack-docker_mosquitto_1",
+      "broker": "chirpstack-docker-mosquitto-1",
       "port": 1883,
       "topics": {
         "uplink_topic": "application/e5c81e6c-5f75-43c0-9f7d-13ad826e9185/device/+/event/up",
