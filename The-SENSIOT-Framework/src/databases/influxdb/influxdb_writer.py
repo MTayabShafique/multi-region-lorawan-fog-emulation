@@ -5,7 +5,6 @@ from databases.influxdb.influxdb_converter import InfluxDBConverter
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 
-# Initialize the logger
 logger = logging.getLogger("sensiot")
 logger.setLevel(logging.DEBUG)
 

@@ -5,8 +5,7 @@ import base64
 import paho.mqtt.client as mqtt
 
 logger = logging.getLogger("sensiot")
-logger.setLevel(logging.DEBUG)  # Set to DEBUG for verbose output
-
+logger.setLevel(logging.DEBUG)
 
 class MqttReader(threading.Thread):
     def __init__(self, name, event, queue, config):
@@ -26,7 +25,6 @@ class MqttReader(threading.Thread):
             logger.error("Uplink topic not specified in the configuration!")
             raise ValueError("Invalid configuration: 'uplink_topic' is required.")
 
-        # MQTT client
         self.client = mqtt.Client()
 
         logger.info(f"{self.name} initialized successfully")
@@ -62,7 +60,7 @@ class MqttReader(threading.Thread):
                 decoded_payload = base64.b64decode(payload).decode()
                 logger.info(f"Device EUI: {dev_eui}, Decoded Payload: {decoded_payload}")
 
-                # Add parsed and decoded data to the queue
+                # Adding parsed and decoded data to the queue
                 self.queue.put({
                     "devEUI": dev_eui,
                     "decodedPayload": decoded_payload

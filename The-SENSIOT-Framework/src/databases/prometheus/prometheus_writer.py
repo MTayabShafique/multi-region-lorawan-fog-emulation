@@ -5,6 +5,9 @@ from prometheus_client import start_http_server, Gauge
 
 logger = logging.getLogger("sensiot")
 logger.setLevel(logging.INFO)
+handler = logging.StreamHandler()
+handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+logger.addHandler(handler)
 
 class PrometheusWriter(threading.Thread):
     def __init__(self, name, event, queue, config):
@@ -23,25 +26,24 @@ class PrometheusWriter(threading.Thread):
 
     def run(self):
         logger.info(f"Started {self.name}")
-        start_http_server(self.port)
+        start_http_server(self.port, addr="0.0.0.0")
 
         while not self.event.is_set():
             self.event.wait(1)
             while not self.queue.empty():
-                data = self.queue.get()
-                if self.__process_data(data):
-                    logger.info("Processed data and updated Prometheus metrics")
-                else:
-                    logger.error("Failed to process data for Prometheus")
+                try:
+                    data = self.queue.get()
+                    if self._process_data(data):
+                        logger.info("Processed data and updated Prometheus metrics")
+                    else:
+                        logger.error("Failed to process data for Prometheus")
+                except Exception as e:
+                    logger.error(f"Unexpected error while processing queue data: {e}")
 
         logger.info(f"Stopped {self.name}")
 
-    def __process_data(self, payload):
-        """
-        Processes MQTT payload and updates Prometheus metrics.
-        :param payload: Data structure from MQTT queue (contains devEUI and decodedPayload)
-        :return: True if successful, False otherwise
-        """
+    def _process_data(self, payload):
+        """Processes MQTT payload and updates Prometheus metrics."""
         try:
             if not isinstance(payload, dict):
                 logger.error(f"Invalid payload format: {payload}")
@@ -54,34 +56,38 @@ class PrometheusWriter(threading.Thread):
                 logger.error(f"No decoded payload found for device {device_id}")
                 return False
 
-            # Convert `decodedPayload` into a structured `objectJSON`
-            sensor_data = {}
-            for entry in decoded_payload.split(", "):  # Example: "Humidity: 100, Temperature: 30"
-                key_value = entry.split(": ")
-                if len(key_value) == 2:
-                    key, value = key_value
-                    sensor_data[key.lower()] = float(value)  # Convert to float
+            #Directly parse JSON instead of splitting strings
+            if isinstance(decoded_payload, str):
+                try:
+                    sensor_data = json.loads(decoded_payload)
+                except json.JSONDecodeError:
+                    logger.error(f"Failed to parse JSON payload: {decoded_payload}")
+                    return False
+            elif isinstance(decoded_payload, dict):  # If it's already a dictionary, use it directly
+                sensor_data = decoded_payload
+            else:
+                logger.error(f"Unexpected payload format: {decoded_payload}")
+                return False
 
-            # Simulating `objectJSON` structure
-            object_json = json.dumps(sensor_data)
 
-            # Load objectJSON safely
-            parsed_data = json.loads(object_json)
+            temperature = sensor_data.get("temperature")
+            humidity = sensor_data.get("humidity")
 
-            # Extract temperature and humidity
-            temperature = parsed_data.get("temperature")
-            humidity = parsed_data.get("humidity")
+
+            logger.info(f"Processed Payload: Device={device_id}, Temp={temperature}, Humidity={humidity}")
 
             # Update Prometheus Gauges
             if temperature is not None:
                 self.temperature_gauge.labels(device_id=device_id).set(temperature)
+                logger.info(f"Updated Prometheus: device_id={device_id}, temperature={temperature}")
             else:
-                logger.warning(f"Temperature missing in payload: {decoded_payload}")
+                logger.warning(f"Missing temperature in payload: {decoded_payload}")
 
             if humidity is not None:
                 self.humidity_gauge.labels(device_id=device_id).set(humidity)
+                logger.info(f"Updated Prometheus: device_id={device_id}, humidity={humidity}")
             else:
-                logger.warning(f"Humidity missing in payload: {decoded_payload}")
+                logger.warning(f"Missing humidity in payload: {decoded_payload}")
 
             return True
         except Exception as e:
