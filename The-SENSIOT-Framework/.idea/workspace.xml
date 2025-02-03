@@ -9,11 +9,7 @@
   <component name="ChangeListManager">
     <list default="true" id="edd25f0f-2fbd-4370-a3b0-10ad51789c2a" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/databases/influxdb/influxdb_converter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/databases/influxdb/influxdb_converter.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/databases/influxdb/influxdb_writer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/databases/influxdb/influxdb_writer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/databases/prometheus/prometheus_writer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/databases/prometheus/prometheus_writer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utilities/mqtt/mqtt_reader.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/utilities/mqtt/mqtt_reader.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/grafana/provisioning/dashboards/SENSIOT.json" beforeDir="false" afterPath="$PROJECT_DIR$/config/grafana/provisioning/dashboards/SENSIOT.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -206,7 +202,7 @@
       <workItem from="1738458422098" duration="3769000" />
       <workItem from="1738526914181" duration="104000" />
       <workItem from="1738527513053" duration="3265000" />
-      <workItem from="1738531908982" duration="13339000" />
+      <workItem from="1738531908982" duration="16073000" />
     </task>
     <servers />
   </component>
