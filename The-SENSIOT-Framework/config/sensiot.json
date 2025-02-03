@@ -22,7 +22,7 @@
       "broker": "chirpstack-docker-mosquitto-1",
       "port": 1883,
       "topics": {
-        "uplink_topic": "application/e5c81e6c-5f75-43c0-9f7d-13ad826e9185/device/+/event/up",
+        "uplink_topic": "application/2ae5df34-8d23-4eb7-a9c3-226a840c7680/device/+/event/up",
         "downlink_topic_template": "application/{application_id}/device/{device_id}/command/down"
       },
       "connection": {
