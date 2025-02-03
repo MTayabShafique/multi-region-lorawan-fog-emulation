@@ -169,6 +169,7 @@ services:
     environment:
       CONFIG: ./sensiot.json
       SERVICE: "web"
+
   ##############################
   # Volumes                    #
   ##############################

@@ -14,10 +14,8 @@ class InfluxDBConverter:
         try:
             logger.debug(f"Converting payload: {payload}")
 
-            # Decode the JSON payload correctly
             decoded_payload = json.loads(payload.get("decodedPayload", "{}"))
 
-            # Debug decoded payload
             logger.debug(f"Decoded payload: {decoded_payload}")
 
             # Extract temperature and humidity from decoded payload
@@ -26,7 +24,6 @@ class InfluxDBConverter:
                 "humidity": float(decoded_payload["humidity"])
             }
 
-            # Debug extracted fields
             logger.debug(f"Extracted fields - Temperature: {fields['temperature']}, Humidity: {fields['humidity']}")
 
             # Create an InfluxDB Point
