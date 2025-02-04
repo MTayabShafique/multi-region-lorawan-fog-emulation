@@ -15,7 +15,7 @@ command_topic_template="us915_0/gateway/{{ .GatewayID }}/command/#"
 type="basic_station"
 
   [backend.basic_station]
-  bind=":3001"
+  bind=":3002"
   tls_cert=""
   tls_key=""
   ca_cert=""
