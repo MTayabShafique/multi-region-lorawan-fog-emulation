@@ -11,8 +11,24 @@ services:
   #############################
   memcached:
     image: memcached:latest
-    command: memcached -vv
+    command: memcached -m 128 -vv  # memcached -m 128 -vv  # Limits memory usage to 128MB
     restart: on-failure
+    deploy:
+      resources:
+        limits:
+          memory: 150M
+    networks:
+      backend:
+
+  memcached_exporter:
+    image: prom/memcached-exporter
+    restart: unless-stopped
+    ports:
+      - "9150:9150"
+    command: # Explicitly define the connection to Memcached
+      - "--memcached.address=memcached:11211"
+    depends_on:
+      - memcached
     networks:
       backend:
 
@@ -34,6 +50,7 @@ services:
       - "8086:8086"
     networks:
       backend:
+
   #############################
   # Chronograf UI             #
   #############################
@@ -169,6 +186,7 @@ services:
     environment:
       CONFIG: ./sensiot.json
       SERVICE: "web"
+
 
   ##############################
   # Volumes                    #

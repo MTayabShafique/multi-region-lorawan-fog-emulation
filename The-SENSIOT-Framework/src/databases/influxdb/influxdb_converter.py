@@ -1,8 +1,7 @@
-import logging
 import json
+import logging
 from influxdb_client import Point
 
-# Initialize the logger
 logger = logging.getLogger("sensiot")
 logger.setLevel(logging.DEBUG)
 
@@ -14,7 +13,16 @@ class InfluxDBConverter:
         try:
             logger.debug(f"Converting payload: {payload}")
 
-            decoded_payload = json.loads(payload.get("decodedPayload", "{}"))
+            # Ensure decodedPayload is a dictionary
+            if isinstance(payload["decodedPayload"], str):
+                try:
+                    payload["decodedPayload"] = json.loads(payload["decodedPayload"])
+                    logger.debug(f"Converted decodedPayload JSON string to dictionary: {payload['decodedPayload']}")
+                except json.JSONDecodeError:
+                    logger.error(f"Failed to parse JSON decodedPayload: {payload['decodedPayload']}")
+                    return None
+
+            decoded_payload = payload["decodedPayload"]
 
             logger.debug(f"Decoded payload: {decoded_payload}")
 
@@ -27,11 +35,13 @@ class InfluxDBConverter:
             logger.debug(f"Extracted fields - Temperature: {fields['temperature']}, Humidity: {fields['humidity']}")
 
             # Create an InfluxDB Point
-            point = Point("sensor_data") \
-                .tag("device_eui", payload.get("devEUI")) \
-                .field("temperature", fields["temperature"]) \
-                .field("humidity", fields["humidity"]) \
+            point = (
+                Point("sensor_data")
+                .tag("device_eui", payload.get("devEUI"))
+                .field("temperature", fields["temperature"])
+                .field("humidity", fields["humidity"])
                 .time(payload.get("timestamp"))  # Optional timestamp
+            )
 
             return point
         except (json.JSONDecodeError, KeyError, ValueError) as e:

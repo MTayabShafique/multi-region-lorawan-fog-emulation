@@ -1,6 +1,7 @@
 import time
 import logging
 import threading
+import json
 from databases.influxdb.influxdb_converter import InfluxDBConverter
 from influxdb_client import InfluxDBClient, Point
 from influxdb_client.client.write_api import SYNCHRONOUS
@@ -19,15 +20,17 @@ class InfluxDBWriter(threading.Thread):
         # Debugging: Log the entire configuration passed
         logger.debug(f"Complete configuration passed to InfluxDBWriter: {self.config}")
 
+        #InfluxDB Configuration
         # Directly use self.config to extract the keys
         self.influxdb_url = f"http://{self.config.get('ip', '127.0.0.1')}:{self.config.get('port', 8086)}"
         self.influxdb_token = self.config.get("token")
         self.influxdb_org = self.config.get("org")
         self.influxdb_bucket = self.config.get("bucket")
+        self.influxdb_measurements = self.config.get("measurements")
 
         # Debug the extracted configuration
         logger.debug(f"InfluxDB Config - URL: {self.influxdb_url}, Token: {self.influxdb_token}, "
-                     f"Org: {self.influxdb_org}, Bucket: {self.influxdb_bucket}")
+                     f"Org: {self.influxdb_org}, Bucket: {self.influxdb_bucket}, Measurements: {self.influxdb_measurements}")
 
         # Validate the configuration
         if not self.influxdb_token or not self.influxdb_org or not self.influxdb_bucket:
@@ -67,7 +70,18 @@ class InfluxDBWriter(threading.Thread):
             try:
                 if not self.queue.empty():
                     payload = self.queue.get()
-                    logger.debug(f"Retrieved payload from queue: {payload}")
+                    logger.debug(f"Fetched payload from Memcached: {payload}")
+
+                    # Convert JSON string to dictionary (if needed)
+                    if isinstance(payload, str):
+                        try:
+                            payload = json.loads(payload)
+                            logger.debug(f"Converted JSON string to dictionary: {payload}")
+                        except json.JSONDecodeError:
+                            logger.error(f"Error decoding JSON payload: {payload}")
+                            continue
+
+
                     influx_data = InfluxDBConverter.convert_to_influxdb_format(payload)
                     if influx_data:
                         logger.debug(f"Converted payload to InfluxDB format: {influx_data}")

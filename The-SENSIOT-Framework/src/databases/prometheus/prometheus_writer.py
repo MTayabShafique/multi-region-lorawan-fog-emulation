@@ -30,11 +30,14 @@ class PrometheusWriter(threading.Thread):
 
         while not self.event.is_set():
             self.event.wait(1)
+
+            # Fetch data from queue (filled by MemcacheReader)
             while not self.queue.empty():
                 try:
-                    data = self.queue.get()
-                    if self._process_data(data):
-                        logger.info("Processed data and updated Prometheus metrics")
+                    payload = self.queue.get()
+                    logger.info(f"Fetched sensor data from MemcacheReader queue: {payload}")
+                    if self._process_data(payload):
+                        logger.info("Processed payload and updated Prometheus metrics")
                     else:
                         logger.error("Failed to process data for Prometheus")
                 except Exception as e:
@@ -43,7 +46,7 @@ class PrometheusWriter(threading.Thread):
         logger.info(f"Stopped {self.name}")
 
     def _process_data(self, payload):
-        """Processes MQTT payload and updates Prometheus metrics."""
+        """Processes payload and updates Prometheus metrics."""
         try:
             if not isinstance(payload, dict):
                 logger.error(f"Invalid payload format: {payload}")
@@ -59,7 +62,8 @@ class PrometheusWriter(threading.Thread):
             #Directly parse JSON instead of splitting strings
             if isinstance(decoded_payload, str):
                 try:
-                    sensor_data = json.loads(decoded_payload)
+                    decoded_payload = json.loads(decoded_payload)
+                    logger.debug(f"Converted decodedPayload JSON string to dictionary: {decoded_payload}")
                 except json.JSONDecodeError:
                     logger.error(f"Failed to parse JSON payload: {decoded_payload}")
                     return False
@@ -70,8 +74,8 @@ class PrometheusWriter(threading.Thread):
                 return False
 
 
-            temperature = sensor_data.get("temperature")
-            humidity = sensor_data.get("humidity")
+            temperature = decoded_payload.get("temperature")
+            humidity = decoded_payload.get("humidity")
 
 
             logger.info(f"Processed Payload: Device={device_id}, Temp={temperature}, Humidity={humidity}")

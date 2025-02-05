@@ -3,8 +3,14 @@ global:
   evaluation_interval: 15s
   external_labels:
       monitor: 'SENSIOT'
+
 scrape_configs:
   - job_name: 'sensiot'
     scrape_interval: 1s
     static_configs:
-         - targets: ['prometheus_writer:8000']
+        - targets: ['prometheus_writer:8000']
+
+  - job_name: 'memcached'
+    scrape_interval: 15s
+    static_configs:
+        - targets: ['memcached_exporter:9150']
