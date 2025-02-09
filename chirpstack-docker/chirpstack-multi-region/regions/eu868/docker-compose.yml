@@ -1,0 +1,119 @@
+version: '3.7'
+
+#############################
+# Common Anchor Definitions
+#############################
+
+x-postgres: &postgres
+  image: postgres:14-alpine
+  restart: unless-stopped
+  volumes:
+    - ../../configuration/postgresql/initdb:/docker-entrypoint-initdb.d
+  environment:
+    POSTGRES_USER: chirpstack
+    POSTGRES_PASSWORD: chirpstack
+    POSTGRES_DB: chirpstack
+
+x-redis: &redis
+  image: redis:7-alpine
+  restart: unless-stopped
+  command: redis-server --save 300 1 --save 60 100 --appendonly no
+
+x-mosquitto: &mosquitto
+  image: eclipse-mosquitto:2
+  restart: unless-stopped
+  volumes:
+    - ../../configuration/mosquitto/eu868/config:/mosquitto/config
+
+x-chirpstack-common: &chirpstack-common
+  image: chirpstack/chirpstack:4
+  restart: unless-stopped
+  command: -c /etc/chirpstack
+
+x-chirpstack-gateway-bridge: &chirpstack-gateway-bridge
+  image: chirpstack/chirpstack-gateway-bridge:4
+  restart: unless-stopped
+  volumes:
+    - ../../configuration/chirpstack-gateway-bridge/chirpstack-gateway-bridge.toml:/etc/chirpstack-gateway-bridge/chirpstack-gateway-bridge.toml
+  command: -c /etc/chirpstack-gateway-bridge/chirpstack-gateway-bridge.toml
+
+x-chirpstack-rest-api: &chirpstack-rest-api
+  image: chirpstack/chirpstack-rest-api:4
+  restart: unless-stopped
+  command: --server chirpstack:8080 --bind 0.0.0.0:8090 --insecure
+
+#############################
+# Region-Specific Settings (EU868)
+#############################
+
+networks:
+  eu868_network:
+    driver: bridge
+
+volumes:
+  postgresqldata_eu868:
+  redisdata_eu868:
+
+services:
+  postgres:
+    <<: *postgres
+    networks:
+      - eu868_network
+    volumes:
+      - postgresqldata_eu868:/var/lib/postgresql/data
+    ports:
+      - "15432:5432"
+
+  redis:
+    <<: *redis
+    networks:
+      - eu868_network
+    volumes:
+      - redisdata_eu868:/data
+    ports:
+      - "16379:6379"
+
+  mosquitto:
+    <<: *mosquitto
+    networks:
+      - eu868_network
+    ports:
+      - "1883:1883"
+
+  chirpstack:
+    <<: *chirpstack-common
+    networks:
+      - eu868_network
+    ports:
+      - "8080:8080"
+    entrypoint: ["/etc/chirpstack/wait-for-postgres.sh"]
+    environment:
+      POSTGRESQL_HOST: postgres
+      POSTGRES_USER: chirpstack
+      POSTGRES_PASSWORD: chirpstack
+      MQTT_BROKER_HOST: mosquitto
+      REDIS_HOST: redis
+    depends_on:
+      - postgres
+      - mosquitto
+      - redis
+    volumes:
+      - ../../configuration/chirpstack:/etc/chirpstack
+
+  chirpstack-gateway-bridge:
+    <<: *chirpstack-gateway-bridge
+    networks:
+      - eu868_network
+    ports:
+      - "1700:1700/udp"
+    depends_on:
+      - mosquitto
+
+  chirpstack-rest-api:
+    <<: *chirpstack-rest-api
+    networks:
+      - eu868_network
+    ports:
+      - "8090:8090"
+    depends_on:
+      - chirpstack
