@@ -1,94 +1,54 @@
 version: '3.7'
 
 #############################
-#  Common Anchor Definitions
+# Service Definitions
 #############################
-
-x-postgres: &postgres
-  image: postgres:14-alpine
-  restart: unless-stopped
-  volumes:
-    - ../../configuration/postgresql/initdb:/docker-entrypoint-initdb.d
-  environment:
-    POSTGRES_USER: chirpstack
-    POSTGRES_PASSWORD: chirpstack
-    POSTGRES_DB: chirpstack
-
-x-redis: &redis
-  image: redis:7-alpine
-  restart: unless-stopped
-  command: redis-server --save 300 1 --save 60 100 --appendonly no
-
-x-mosquitto: &mosquitto
-  image: eclipse-mosquitto:2
-  restart: unless-stopped
-  volumes:
-    - ../../configuration/mosquitto/eu868/config:/mosquitto/config
-
-x-chirpstack-common: &chirpstack-common
-  image: chirpstack/chirpstack:4
-  command: -c /etc/chirpstack
-  restart: unless-stopped
-
-x-chirpstack-gateway-bridge: &chirpstack-gateway-bridge
-  image: chirpstack/chirpstack-gateway-bridge:4
-  restart: unless-stopped
-  volumes:
-    - ../../configuration/chirpstack-gateway-bridge/chirpstack-gateway-bridge.toml:/etc/chirpstack-gateway-bridge/chirpstack-gateway-bridge.toml
-  command: -c /etc/chirpstack-gateway-bridge/chirpstack-gateway-bridge.toml
-
-x-chirpstack-rest-api: &chirpstack-rest-api
-  image: chirpstack/chirpstack-rest-api:4
-  restart: unless-stopped
-  command: --server chirpstack:8080 --bind 0.0.0.0:8090 --insecure
-
-#############################
-#  Region-Specific Settings (US915_0)
-#############################
-
-networks:
-  us915_0_network:
-    driver: bridge
-
-volumes:
-  postgresqldata_us915_0:
-  redisdata_us915_0:
 
 services:
   postgres:
-    <<: *postgres
+    image: postgres:14-alpine
+    restart: unless-stopped
     networks:
-      - us915_0_network
+      - us915_network
     volumes:
-      - postgresqldata_us915_0:/var/lib/postgresql/data
+      - postgresqldata_us915:/var/lib/postgresql/data
+      - ../../configuration/postgresql/initdb:/docker-entrypoint-initdb.d:ro
+    environment:
+      POSTGRES_USER: chirpstack
+      POSTGRES_PASSWORD: chirpstack
+      POSTGRES_DB: chirpstack
     ports:
-      - "25432:5432"
+      - "25432:5432"  # Changed host port to avoid conflict
 
   redis:
-    <<: *redis
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --save 300 1 --save 60 100 --appendonly no
     networks:
-      - us915_0_network
+      - us915_network
     volumes:
-      - redisdata_us915_0:/data
+      - redisdata_us915:/data
     ports:
-      - "26379:6379"
+      - "26379:6379"  # Changed host port to avoid conflict
 
   mosquitto:
-    <<: *mosquitto
+    image: eclipse-mosquitto:2
+    restart: unless-stopped
     networks:
-      - us915_0_network
+      - us915_network
+    volumes:
+      - ../../configuration/mosquitto/us915_0/config:/mosquitto/config:ro
     ports:
-      - "1884:1883"
+      - "2883:1883"  # Changed host port to avoid conflict
 
   chirpstack:
-    <<: *chirpstack-common
+    image: chirpstack/chirpstack:4
+    restart: unless-stopped
     networks:
-      - us915_0_network
-    volumes:
-      - ../../configuration/chirpstack:/etc/chirpstack
-    entrypoint: ["/etc/chirpstack/wait-for-postgres.sh"]
+      - us915_network
     ports:
-      - "8081:8080"
+      - "9080:8080"  # Changed host port to avoid conflict
+    entrypoint: ["/etc/chirpstack/wait-for-postgres.sh"]
     environment:
       POSTGRESQL_HOST: postgres
       POSTGRES_USER: chirpstack
@@ -99,25 +59,44 @@ services:
       - postgres
       - mosquitto
       - redis
+    volumes:
+      - ../../configuration/chirpstack:/etc/chirpstack:ro
 
   chirpstack-gateway-bridge:
-    <<: *chirpstack-gateway-bridge
+    image: chirpstack/chirpstack-gateway-bridge:4
+    restart: unless-stopped
     networks:
-      - us915_0_network
+      - us915_network
     ports:
-      - "1701:1700/udp"
+      - "2700:1700/udp"  # Changed host port to avoid conflict
     environment:
       INTEGRATION__MQTT__EVENT_TOPIC_TEMPLATE: "us915_0/gateway/{{ .GatewayID }}/event/{{ .EventType }}"
       INTEGRATION__MQTT__STATE_TOPIC_TEMPLATE: "us915_0/gateway/{{ .GatewayID }}/state/{{ .StateType }}"
       INTEGRATION__MQTT__COMMAND_TOPIC_TEMPLATE: "us915_0/gateway/{{ .GatewayID }}/command/#"
     depends_on:
       - mosquitto
+    volumes:
+      - ../../configuration/chirpstack-gateway-bridge/chirpstack-gateway-bridge.toml:/etc/chirpstack-gateway-bridge/chirpstack-gateway-bridge.toml:ro
 
   chirpstack-rest-api:
-    <<: *chirpstack-rest-api
+    image: chirpstack/chirpstack-rest-api:4
+    restart: unless-stopped
     networks:
-      - us915_0_network
+      - us915_network
     ports:
-      - "8091:8090"
+      - "9090:8090"  # Changed host port to avoid conflict
+    command: --server chirpstack:8080 --bind 0.0.0.0:8090 --insecure
     depends_on:
       - chirpstack
+
+#############################
+# Networks & Volumes
+#############################
+
+networks:
+  us915_network:
+    driver: bridge
+
+volumes:
+  postgresqldata_us915:
+  redisdata_us915:

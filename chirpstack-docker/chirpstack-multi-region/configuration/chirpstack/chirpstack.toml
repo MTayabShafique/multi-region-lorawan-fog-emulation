@@ -93,4 +93,5 @@
 
 
 # Include region-specific configurations
+#include = ["/etc/chirpstack/region_eu868.toml", "/etc/chirpstack/region_us915_0.toml"]
 include = ["region_eu868.toml", "region_us915_0.toml"]
