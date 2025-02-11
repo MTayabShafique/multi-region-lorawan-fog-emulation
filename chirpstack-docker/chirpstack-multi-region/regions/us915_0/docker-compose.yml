@@ -18,7 +18,7 @@ services:
       POSTGRES_PASSWORD: chirpstack
       POSTGRES_DB: chirpstack
     ports:
-      - "25432:5432"  # Changed host port to avoid conflict
+      - "25432:5432"
 
   redis:
     image: redis:7-alpine
@@ -29,7 +29,7 @@ services:
     volumes:
       - redisdata_us915:/data
     ports:
-      - "26379:6379"  # Changed host port to avoid conflict
+      - "26379:6379"
 
   mosquitto:
     image: eclipse-mosquitto:2
@@ -39,7 +39,7 @@ services:
     volumes:
       - ../../configuration/mosquitto/us915_0/config:/mosquitto/config:ro
     ports:
-      - "2883:1883"  # Changed host port to avoid conflict
+      - "2883:1883"
 
   chirpstack:
     image: chirpstack/chirpstack:4
@@ -47,7 +47,7 @@ services:
     networks:
       - us915_network
     ports:
-      - "9080:8080"  # Changed host port to avoid conflict
+      - "9080:8080"
     entrypoint: ["/etc/chirpstack/wait-for-postgres.sh"]
     environment:
       POSTGRESQL_HOST: postgres
@@ -68,7 +68,7 @@ services:
     networks:
       - us915_network
     ports:
-      - "2700:1700/udp"  # Changed host port to avoid conflict
+      - "1701:1700/udp"
     environment:
       INTEGRATION__MQTT__EVENT_TOPIC_TEMPLATE: "us915_0/gateway/{{ .GatewayID }}/event/{{ .EventType }}"
       INTEGRATION__MQTT__STATE_TOPIC_TEMPLATE: "us915_0/gateway/{{ .GatewayID }}/state/{{ .StateType }}"
@@ -84,7 +84,7 @@ services:
     networks:
       - us915_network
     ports:
-      - "9090:8090"  # Changed host port to avoid conflict
+      - "8091:8090"
     command: --server chirpstack:8080 --bind 0.0.0.0:8090 --insecure
     depends_on:
       - chirpstack
