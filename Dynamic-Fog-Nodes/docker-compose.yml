@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  mqtt:
+    image: eclipse-mosquitto
+    ports:
+      - "1888:1883"
+    volumes:
+      - ./config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+    restart: always
+
+  fog_manager:
+      build: ./fog-manager
+      environment:
+        - DOCKER_HOST=  # Empty value to prevent conflicts
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock  # Read-only mount
+        - ./config:/app/config
+      user: "1000:984"  # Explicit UID:GID (match your host's docker group ID
+      depends_on:
+        - mqtt
+      restart: unless-stopped

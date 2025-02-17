@@ -1,0 +1,16 @@
+{
+  "brokers": [
+    {
+      "region": "eu868",
+      "port": 1883,
+      "address": "mqtt",
+      "topic_prefix": "eu868"
+    },
+    {
+      "region": "us915_0",
+      "port": 1883,
+      "address": "mqtt",
+      "topic_prefix": "us915_0"
+    }
+  ]
+}

@@ -8,16 +8,20 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="edd25f0f-2fbd-4370-a3b0-10ad51789c2a" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/sensiot_memcache/memcache_reader.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Dynamic-Fog-Nodes/configuration/chirpstack/env/.env-eu868" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Dynamic-Fog-Nodes/configuration/chirpstack/env/.env-us915_0" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Dynamic-Fog-Nodes/configuration/mqtt-broker/Dockerfile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Dynamic-Fog-Nodes/configuration/mqtt-broker/mosquitto.conf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Dynamic-Fog-Nodes/external-mqtt/Dockerfile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Dynamic-Fog-Nodes/external-mqtt/mosquitto.conf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Dynamic-Fog-Nodes/fog-node-manager/manager.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Dynamic-Fog-Nodes/fog-node/Dockerfile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Dynamic-Fog-Nodes/fog-node/app/config.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Dynamic-Fog-Nodes/fog-node/app/main.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Dynamic-Fog-Nodes/fog-node/app/mqtt_client.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Dynamic-Fog-Nodes/fog-node/app/processor.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Dynamic-Fog-Nodes/fog-node/requirements.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/prometheus/prometheus.yml" beforeDir="false" afterPath="$PROJECT_DIR$/config/prometheus/prometheus.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/sensiot.json" beforeDir="false" afterPath="$PROJECT_DIR$/config/sensiot.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/databases/influxdb/influxdb_converter.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/databases/influxdb/influxdb_converter.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/databases/influxdb/influxdb_writer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/databases/influxdb/influxdb_writer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/databases/prometheus/prometheus_writer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/databases/prometheus/prometheus_writer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/sensiot_memcache/memcache_writer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/sensiot_memcache/memcache_writer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/services.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -57,28 +61,28 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Docker.Dockerfile.executor&quot;: &quot;Run&quot;,
-    &quot;Docker.docker-compose.yml.local_manager: Compose Deployment.executor&quot;: &quot;Run&quot;,
-    &quot;Docker.docker-compose.yml: Compose Deployment.executor&quot;: &quot;Run&quot;,
-    &quot;Python.manager.executor&quot;: &quot;Run&quot;,
-    &quot;Python.services.executor&quot;: &quot;Run&quot;,
-    &quot;Python.web.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;feature-6/reading-from-memcache&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/tayyab/Thesis/code/The-SENSIOT-Framework&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Docker.Dockerfile.executor": "Run",
+    "Docker.docker-compose.yml.local_manager: Compose Deployment.executor": "Run",
+    "Docker.docker-compose.yml: Compose Deployment.executor": "Run",
+    "Python.manager.executor": "Run",
+    "Python.services.executor": "Run",
+    "Python.web.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "feature-7/multiregion__chirpstack__lwn__simulator",
+    "last_opened_file_path": "/home/tayyab/Thesis/code/chirpstack-docker",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "run.code.analysis.last.selected.profile": "pProject Default",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/sensiot_memcache/meta" />
@@ -213,7 +217,9 @@
       <workItem from="1738531908982" duration="16540000" />
       <workItem from="1738624776106" duration="76000" />
       <workItem from="1738696279368" duration="2375000" />
-      <workItem from="1738788809683" duration="3341000" />
+      <workItem from="1738788809683" duration="5119000" />
+      <workItem from="1739273075123" duration="738000" />
+      <workItem from="1739480029687" duration="3069000" />
     </task>
     <servers />
   </component>
