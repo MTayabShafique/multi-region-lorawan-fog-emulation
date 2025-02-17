@@ -8,7 +8,20 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="edd25f0f-2fbd-4370-a3b0-10ad51789c2a" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/../chirpstack-docker/chirpstack-multi-region/regions/us915_0/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/../chirpstack-docker/chirpstack-multi-region/regions/us915_0/docker-compose.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Dynamic-Fog-Nodes/configuration/chirpstack/env/.env-eu868" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Dynamic-Fog-Nodes/configuration/chirpstack/env/.env-us915_0" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Dynamic-Fog-Nodes/configuration/mqtt-broker/Dockerfile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Dynamic-Fog-Nodes/configuration/mqtt-broker/mosquitto.conf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Dynamic-Fog-Nodes/external-mqtt/Dockerfile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Dynamic-Fog-Nodes/external-mqtt/mosquitto.conf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Dynamic-Fog-Nodes/fog-node-manager/manager.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Dynamic-Fog-Nodes/fog-node/Dockerfile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Dynamic-Fog-Nodes/fog-node/app/config.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Dynamic-Fog-Nodes/fog-node/app/main.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Dynamic-Fog-Nodes/fog-node/app/mqtt_client.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Dynamic-Fog-Nodes/fog-node/app/processor.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Dynamic-Fog-Nodes/fog-node/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -59,7 +72,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "feature-7/multiregion__chirpstack__lwn__simulator",
-    "last_opened_file_path": "/home/tayyab/Thesis/code/The-SENSIOT-Framework",
+    "last_opened_file_path": "/home/tayyab/Thesis/code/chirpstack-docker",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -206,6 +219,7 @@
       <workItem from="1738696279368" duration="2375000" />
       <workItem from="1738788809683" duration="5119000" />
       <workItem from="1739273075123" duration="738000" />
+      <workItem from="1739480029687" duration="3069000" />
     </task>
     <servers />
   </component>

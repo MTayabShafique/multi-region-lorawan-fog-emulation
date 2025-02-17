@@ -69,14 +69,11 @@ services:
       - us915_network
     ports:
       - "1701:1700/udp"
-    environment:
-      INTEGRATION__MQTT__EVENT_TOPIC_TEMPLATE: "us915_0/gateway/{{ .GatewayID }}/event/{{ .EventType }}"
-      INTEGRATION__MQTT__STATE_TOPIC_TEMPLATE: "us915_0/gateway/{{ .GatewayID }}/state/{{ .StateType }}"
-      INTEGRATION__MQTT__COMMAND_TOPIC_TEMPLATE: "us915_0/gateway/{{ .GatewayID }}/command/#"
     depends_on:
       - mosquitto
     volumes:
-      - ../../configuration/chirpstack-gateway-bridge/chirpstack-gateway-bridge.toml:/etc/chirpstack-gateway-bridge/chirpstack-gateway-bridge.toml:ro
+      #- ../../configuration/chirpstack-gateway-bridge/chirpstack-gateway-bridge.toml:/etc/chirpstack-gateway-bridge/chirpstack-gateway-bridge.toml:ro
+      - ../../configuration/chirpstack-gateway-bridge/chirpstack-gateway-bridge_us915_0.toml:/etc/chirpstack-gateway-bridge/chirpstack-gateway-bridge.toml:ro
 
   chirpstack-rest-api:
     image: chirpstack/chirpstack-rest-api:4
