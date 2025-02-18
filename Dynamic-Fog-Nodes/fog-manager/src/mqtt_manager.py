@@ -43,18 +43,16 @@ class MQTTManager:
                         print(f"Connecting to broker for region: {region}")
                         client = self.create_client(broker)
                         self.active_clients[region] = client
-                # Optionally, disconnect clients for brokers no longer configured.
-                for region in list(self.active_clients.keys()):
-                    if not any(broker.get("region") == region for broker in brokers):
-                        print(f"Disconnecting from broker for region: {region}")
-                        self.active_clients[region].disconnect()
-                        del self.active_clients[region]
+                    else:
+                        print(f"✅ Broker already connected for region: {region}, skipping re-subscription.")
             time.sleep(10)
 
     def create_client(self, broker):
         client = mqtt.Client(client_id=f"client_{broker.get('region')}")
         client.on_message = handle_message
         client.connect(broker.get("address"), broker.get("port"), 60)
-        client.subscribe("application/#")
+        if not client.is_connected():
+            print(f"📡 Subscribing to application/# for {broker.get('region')}")
+            client.subscribe("application/#")
         threading.Thread(target=client.loop_forever, daemon=True).start()
         return client
