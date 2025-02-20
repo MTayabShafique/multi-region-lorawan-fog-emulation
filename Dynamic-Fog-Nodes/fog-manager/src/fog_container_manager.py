@@ -3,18 +3,22 @@ import os
 import time
 
 # Remove any conflicting Docker environment variables
-for key in list(os.environ.keys()):
-    if key.startswith('DOCKER_'):
-        del os.environ[key]
+#for key in list(os.environ.keys()):
+    #if key.startswith('DOCKER_'):
+        #del os.environ[key]
 
 
 class FogContainerManager:
-    def __init__(self, image_name):
-        #self.client = docker.APIClient(base_url='unix://var/run/docker.sock', version='auto', timeout=60)
-        self.docker_client = docker.DockerClient(base_url='unix://var/run/docker.sock', version='auto')
+    def __init__(self, image_name, mqtt_publisher=None):
+        """
+        image_name: The Docker image name to create fog node containers.
+        mqtt_publisher: optional reference to an MQTT publisher (e.g. FogMQTTRouter).
+        """
+        self.docker_client = docker.DockerClient(base_url='unix:///var/run/docker.sock', version='auto')
         self.image_name = image_name
         self.network_name = "dynamic_fog_network"
         self.running_containers = {}
+        self.mqtt_publisher = mqtt_publisher
 
     def ensure_network(self):
         """Ensure the Docker network exists and avoid re-creation conflicts."""
@@ -60,11 +64,19 @@ class FogContainerManager:
             container = self.docker_client.containers.run(
                 self.image_name,
                 detach=True,
-                environment={"REGION": region},
+                environment={
+                    "FOG_REGION": region,
+                    "MQTT_BROKER": "mqtt",
+                    "MQTT_PORT": "1883",
+                    "DOCKER_HOST": "unix:///var/run/docker.sock"
+                },
                 name=container_name,
                 labels={"region": region},
                 restart_policy={"Name": "on-failure"},
-                network=self.network_name
+                network=self.network_name,
+                volumes={
+                    "/var/run/docker.sock": {"bind": "/var/run/docker.sock", "mode": "rw"}
+                }
             )
             time.sleep(2)
             print(f"✅ Fog node container {container_name} started successfully.")
@@ -76,7 +88,7 @@ class FogContainerManager:
         return container
 
     def route_message(self, region, message):
-        """Route messages to the appropriate fog node."""
+        """Route messages to the appropriate fog node and publish via MQTT."""
         if region not in self.running_containers:
             print(f"⚠️ No active fog node for region {region}, checking container status...")
             self.start_fog_node(region)
@@ -84,6 +96,10 @@ class FogContainerManager:
         container = self.running_containers.get(region)
         if container:
             print(f"📨 Routing message to fog node {container.name} for region {region}: {message}")
+
+            # If we have an MQTT publisher, also publish this message to the relevant topic
+            if self.mqtt_publisher is not None:
+                self.mqtt_publisher.route_message(region, message)
 
     def stop_fog_node(self, region):
         """Stop and remove a fog node container for a region."""
