@@ -2,12 +2,6 @@ import docker
 import os
 import time
 
-# Remove any conflicting Docker environment variables
-#for key in list(os.environ.keys()):
-    #if key.startswith('DOCKER_'):
-        #del os.environ[key]
-
-
 class FogContainerManager:
     def __init__(self, image_name, mqtt_publisher=None):
         """
