@@ -7,16 +7,35 @@ services:
       - "1888:1883"
     volumes:
       - ./config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+    networks:
+      - dynamic-fog-nodes_default
     restart: always
 
   fog_manager:
-      build: ./fog-manager
-      environment:
-        - DOCKER_HOST=  # Empty value to prevent conflicts
-      volumes:
-        - /var/run/docker.sock:/var/run/docker.sock  # Read-only mount
-        - ./config:/app/config
-      user: "1000:984"  # Explicit UID:GID (match your host's docker group ID
-      depends_on:
-        - mqtt
-      restart: unless-stopped
+    build: ./fog-manager
+    environment:
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - MQTT_BROKER=mqtt
+      - MQTT_PORT=1883
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock  # Read-only mount
+      - ./config:/app/config
+    user: "1000:984"  # Explicit UID:GID (match your host's docker group ID)
+    depends_on:
+      - mqtt
+    networks:
+      - dynamic-fog-nodes_default
+      - eu868_eu868_network
+      - us915_0_us915_network
+    dns:
+      - 8.8.8.8  # Google's public DNS
+      - 8.8.4.4
+    restart: unless-stopped
+
+networks:
+  dynamic-fog-nodes_default:
+    driver: bridge
+  eu868_eu868_network:
+    external: true
+  us915_0_us915_network:
+    external: true

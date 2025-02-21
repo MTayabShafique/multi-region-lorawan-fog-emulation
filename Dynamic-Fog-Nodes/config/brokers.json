@@ -3,13 +3,13 @@
     {
       "region": "eu868",
       "port": 1883,
-      "address": "mqtt",
+      "address": " eu868-mosquitto-1",
       "topic_prefix": "eu868"
     },
     {
       "region": "us915_0",
       "port": 1883,
-      "address": "mqtt",
+      "address": "us915_0-mosquitto-1",
       "topic_prefix": "us915_0"
     }
   ]

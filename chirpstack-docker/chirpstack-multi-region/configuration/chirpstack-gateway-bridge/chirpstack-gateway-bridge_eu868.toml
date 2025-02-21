@@ -13,12 +13,11 @@ state_topic_template="eu868/gateway/{{ .GatewayID }}/state/{{ .StateType }}"
 command_topic_template="eu868/gateway/{{ .GatewayID }}/command/#"
 
 
-[gateway]
-  # Add custom metadata that will be included in each uplink's rxInfo metadata.
-  [[gateway.meta_data]]
-  key = "region_name"
-  value = "eu868"
+[meta_data]
 
-  [[gateway.meta_data]]
-  key = "region_common_name"
-  value = "EU868"
+  # Static.
+  #
+  # Static key (string) / value (string) meta-data.
+  [meta_data.static]
+  # Example:
+  region="eu868"

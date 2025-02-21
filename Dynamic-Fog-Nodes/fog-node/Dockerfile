@@ -4,12 +4,9 @@ FROM python:3.9-slim
 WORKDIR /app
 
 # Copy the fog node application
-COPY fog_node.py .
+COPY fog_node_mqtt.py .
 
-# Install Flask (for exposing an API endpoint for demonstration)
-RUN pip install --no-cache-dir flask
+RUN pip install --no-cache-dir paho-mqtt
+#RUN apt-get update && apt-get install -y mosquitto mosquitto-clients
 
-# Expose port (if the fog node exposes an API)
-EXPOSE 5000
-
-CMD ["python", "fog_node.py"]
+CMD ["python", "fog_node_mqtt.py"]
