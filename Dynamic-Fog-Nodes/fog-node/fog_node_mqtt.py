@@ -3,11 +3,14 @@ import time
 import os
 import paho.mqtt.client as mqtt
 
+print("FOG_REGION environment variable:", os.getenv("FOG_REGION", "not set"))
+
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
         print("Connected to MQTT broker on fog node")
         region = userdata.get("region", "unknown")
         topic = f"fog/{region}/process"
+        print("Subscribing to topic:", topic)
         client.subscribe(topic, qos=1)
         print(f"Subscribed to topic {topic}")
     else:
@@ -29,7 +32,7 @@ def start_fog_node_mqtt():
 
     # Implement retry logic
     retries = 0
-    max_retries = 5
+    max_retries = 10
     while retries < max_retries:
         try:
             print(f"Attempting connection to {broker_address}:{broker_port} (attempt {retries+1})")

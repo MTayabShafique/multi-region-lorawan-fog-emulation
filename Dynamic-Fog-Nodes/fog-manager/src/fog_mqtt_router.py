@@ -25,7 +25,7 @@ class FogMQTTRouter:
     def connect_to_broker(self):
         """Attempt connection to the MQTT broker with exponential backoff retries."""
         retries = 0
-        max_retries = 5
+        max_retries = 10
         backoff = 3  # Initial wait time in seconds
 
         while retries < max_retries:
@@ -66,7 +66,7 @@ class FogMQTTRouter:
         logger.info(f"📤 Publishing to topic {topic}: {message}")
 
         # Publish the message with QoS level 1
-        result = self.client.publish(topic, message, qos=1)
+        result = self.client.publish(topic, message, qos=1, retain=True)
         if result.rc == mqtt.MQTT_ERR_SUCCESS:
             logger.info(f"✅ Message successfully published to {topic}")
         else:

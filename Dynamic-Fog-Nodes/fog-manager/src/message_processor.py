@@ -1,7 +1,8 @@
 import json
 import logging
 import os
-from src.fog_container_manager import fog_manager
+from src import globals as g
+
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -34,7 +35,10 @@ def on_message(client, userdata, msg):
             region = os.getenv("DEFAULT_REGION", "unknown_region")  # Fallback if missing
 
         logger.info(f"🌍 Routing message to region: {region}")
-        fog_manager.route_message(region, payload_str)
+        if g.fog_manager:
+            g.fog_manager.route_message(region, payload_str)
+        else:
+            logger.error("Fog manager instance not set. Cannot route message.")
 
     except json.JSONDecodeError:
         logger.error("❌ Error decoding JSON payload.")

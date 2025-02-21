@@ -16,7 +16,7 @@ class FogContainerManager:
         """
         self.docker_client = docker.DockerClient(base_url='unix:///var/run/docker.sock', version='auto')
         self.image_name = image_name
-        self.network_name = "dynamic_fog_network"
+        self.network_name = "dynamic-fog-nodes_dynamic-fog-nodes_default"
         self.running_containers = {}
         self.mqtt_publisher = mqtt_publisher
 
@@ -110,5 +110,3 @@ class FogContainerManager:
             container.remove()
             del self.running_containers[region]
 
-# Create a global instance for use in your application.
-fog_manager = FogContainerManager(image_name="myorg/fog-node:latest")

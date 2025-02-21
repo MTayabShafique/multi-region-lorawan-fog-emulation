@@ -15,6 +15,8 @@ services:
     build: ./fog-manager
     environment:
       - DOCKER_HOST=unix:///var/run/docker.sock
+      - MQTT_BROKER=mqtt
+      - MQTT_PORT=1883
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock  # Read-only mount
       - ./config:/app/config
@@ -25,6 +27,9 @@ services:
       - dynamic-fog-nodes_default
       - eu868_eu868_network
       - us915_0_us915_network
+    dns:
+      - 8.8.8.8  # Google's public DNS
+      - 8.8.4.4
     restart: unless-stopped
 
 networks:
