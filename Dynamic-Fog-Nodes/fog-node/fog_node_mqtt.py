@@ -31,10 +31,12 @@ def on_message(client, userdata, msg):
         uplink_message = json.loads(payload_str)
         processed_data = extract_relevant_data(uplink_message)
         enriched_data = add_metadata(processed_data, f"fog_node_{REGION}")
+        logger.info(f"📝 Processed Data (before publishing): {json.dumps(enriched_data, indent=2)}")
 
         # Publish processed data
         client.publish(PUBLISH_TOPIC, json.dumps(enriched_data), qos=1)
         logger.info(f"🚀 Published processed data to {PUBLISH_TOPIC}")
+
 
     except json.JSONDecodeError:
         logger.error("❌ Error: Received non-JSON payload.")
@@ -44,7 +46,6 @@ def start_fog_node_mqtt():
     client.on_connect = on_connect
     client.on_message = on_message
 
-    # Connect to broker
     retries = 0
     max_retries = 10
     while retries < max_retries:

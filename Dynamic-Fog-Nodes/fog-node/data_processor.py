@@ -3,7 +3,6 @@ import json
 import logging
 from datetime import datetime
 
-# Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
@@ -13,15 +12,14 @@ def extract_relevant_data(uplink_message):
     Extracts necessary fields from the uplink message.
 
     Args:
-        uplink_message (dict): The original uplink message from ChirpStack.
+        uplink_message (dict): original uplink message from ChirpStack.
 
     Returns:
-        dict: Processed data containing key sensor values and metadata.
+        dict: Processed data containing key sensor values.
     """
     try:
         logger.info("🔍 Extracting relevant fields from uplink message.")
 
-        # Extract basic information
         extracted_data = {
             "timestamp": uplink_message.get("time", "N/A"),
             "device_eui": uplink_message.get("deviceInfo", {}).get("devEui", "N/A"),
@@ -33,7 +31,6 @@ def extract_relevant_data(uplink_message):
             "channel": uplink_message.get("rxInfo", [{}])[0].get("channel", "N/A"),
         }
 
-        # Extract sensor data by decoding Base64-encoded payload
         raw_sensor_data = uplink_message.get("data", None)
         extracted_data["sensor_data"] = decode_base64_data(raw_sensor_data)
 
@@ -47,7 +44,7 @@ def extract_relevant_data(uplink_message):
 
 def decode_base64_data(encoded_data):
     """
-    Decodes Base64-encoded sensor data and attempts to parse it as JSON.
+    Decodes Base64-encoded sensor data and parse it as JSON.
 
     Args:
         encoded_data (str): Base64-encoded sensor data.
@@ -64,7 +61,6 @@ def decode_base64_data(encoded_data):
         decoded_bytes = base64.b64decode(encoded_data)
         decoded_str = decoded_bytes.decode("utf-8")
 
-        # Try to parse as JSON
         sensor_data = json.loads(decoded_str)
         logger.info(f"✅ Successfully decoded sensor data: {sensor_data}")
         return sensor_data
@@ -80,7 +76,7 @@ def decode_base64_data(encoded_data):
 
 def add_metadata(processed_data, fog_node_id):
     """
-    Adds metadata to the processed data for tracking.
+    Adds metadata to the processed data.
 
     Args:
         processed_data (dict): The extracted sensor data.
@@ -103,4 +99,4 @@ def add_metadata(processed_data, fog_node_id):
 
     except Exception as e:
         logger.error(f"❌ Error adding metadata: {e}")
-        return processed_data  # Return the data even if metadata addition fails
+        return processed_data
