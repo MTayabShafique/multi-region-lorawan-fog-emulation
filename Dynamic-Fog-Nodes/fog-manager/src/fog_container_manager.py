@@ -10,47 +10,50 @@ class FogContainerManager:
         """
         self.docker_client = docker.DockerClient(base_url='unix:///var/run/docker.sock', version='auto')
         self.image_name = image_name
-        self.network_name = "dynamic-fog-nodes_dynamic-fog-nodes_default"
+        self.network_name = "fog-sensiot_network"  # Use the exact external network name as declared in docker-compose
         self.running_containers = {}
         self.mqtt_publisher = mqtt_publisher
 
-    def ensure_network(self):
-        """Ensure the Docker network exists and avoid re-creation conflicts."""
-        networks = self.docker_client.networks.list()
-        existing_networks = [net.name for net in networks]
-
-        if self.network_name in existing_networks:
-            print(f"✅ Network {self.network_name} already exists, skipping creation.")
-            return
-
-        print(f"🚀 Creating network {self.network_name}...")
-        self.docker_client.networks.create(self.network_name, driver="bridge")
-
     def get_running_container(self, region):
-            """Check if a fog node container already exists and is running."""
-            container_name = f"fog_node_{region}"
-            existing = self.docker_client.containers.list(all=True, filters={"name": container_name})
+        """Check if a fog node container already exists and is running."""
+        container_name = f"fog_node_{region}"
+        existing = self.docker_client.containers.list(all=True, filters={"name": container_name})
 
-            if existing:
-                container = existing[0]  # Get first found
-                if container.status == "running":
-                    print(f"✅ Fog node {container_name} is already running.")
-                    return container
-                else:
-                    print(f"🔄 Restarting stopped container {container_name}...")
-                    container.start()
-                    return container
-            return None
+        if existing:
+            container = existing[0]  # Get first found
+            if container.status == "running":
+                print(f"✅ Fog node {container_name} is already running.")
+                return container
+            else:
+                print(f"🔄 Restarting stopped container {container_name}...")
+                container.start()
+                return container
+        return None
+
+    def ensure_container_network(self, container):
+        """Ensure the container is connected to the expected network."""
+        container.reload()  # Update container attributes
+        networks = container.attrs['NetworkSettings']['Networks']
+        if self.network_name not in networks:
+            print(f"⚠️ Container {container.name} is not attached to {self.network_name}. Attaching now...")
+            try:
+                network = self.docker_client.networks.get(self.network_name)
+                network.connect(container)
+                print(f"✅ Container {container.name} successfully attached to {self.network_name}.")
+            except docker.errors.APIError as e:
+                print(f"❌ Error attaching container {container.name} to network {self.network_name}: {e}")
+        else:
+            print(f"✅ Container {container.name} is attached to {self.network_name}.")
 
     def start_fog_node(self, region):
         """Ensure a fog node is running for the given region."""
         container_name = f"fog_node_{region}"
-        self.ensure_network()
 
         # Check if already running
         running_container = self.get_running_container(region)
         if running_container:
             self.running_containers[region] = running_container
+            self.ensure_container_network(running_container)
             return running_container
 
         print(f"🚀 Creating fog node container for region: {region}")
@@ -67,7 +70,7 @@ class FogContainerManager:
                 name=container_name,
                 labels={"region": region},
                 restart_policy={"Name": "on-failure"},
-                network=self.network_name,
+                network=self.network_name,  # Attempt to attach automatically
                 volumes={
                     "/var/run/docker.sock": {"bind": "/var/run/docker.sock", "mode": "rw"}
                 }
@@ -79,6 +82,8 @@ class FogContainerManager:
             return None
 
         self.running_containers[region] = container
+        # Ensure it is attached to the correct network.
+        self.ensure_container_network(container)
         return container
 
     def route_message(self, region, message):
@@ -90,8 +95,6 @@ class FogContainerManager:
         container = self.running_containers.get(region)
         if container:
             print(f"📨 Routing message to fog node {container.name} for region {region}: {message}")
-
-            # If we have an MQTT publisher, also publish this message to the relevant topic
             if self.mqtt_publisher is not None:
                 self.mqtt_publisher.route_message(region, message)
 
@@ -103,4 +106,3 @@ class FogContainerManager:
             container.stop()
             container.remove()
             del self.running_containers[region]
-

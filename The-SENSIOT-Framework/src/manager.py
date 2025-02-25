@@ -21,9 +21,7 @@ except Exception as e:
 logger = LoggerFactory(configuration['utilities']['logging']).create_logger()
 logger = logging.LoggerAdapter(logger, {"class": os.path.basename(__file__)})
 
-
 class Manager:
-
     def __init__(self, service_type):
         self.threads = []
         self.service_type = service_type
@@ -31,7 +29,6 @@ class Manager:
         self.event = threading.Event()
         self.__register_signals()
         logger.info("Main program for {} initialized successfully".format(service_type))
-
         print("Loaded configuration:", self.config)
 
     def __register_signals(self):
@@ -52,7 +49,7 @@ class Manager:
         for t in threads:
             if t not in self.threads:
                 self.threads.append(t)
-                logger.info("Add thread {} as {}".format(t.name, len(self.threads)))
+                logger.info("Added thread {} as {}".format(t.name, len(self.threads)))
 
     def __start_threads(self):
         logger.info("Starting threads...")
@@ -98,7 +95,6 @@ class Manager:
                     self.__restart()
                     break
 
-
 if __name__ == "__main__":
     print("CONFIG:", os.getenv("CONFIG"))
     print("SERVICE:", os.getenv("SERVICE"))
@@ -111,4 +107,3 @@ if __name__ == "__main__":
     logger.info(f"Starting service: {service_type}")
     manager = Manager(service_type)
     manager.run()
-

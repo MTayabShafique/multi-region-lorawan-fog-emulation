@@ -1,11 +1,11 @@
 import logging
 import threading
 import json
-import base64
 import paho.mqtt.client as mqtt
 
 logger = logging.getLogger("sensiot")
 logger.setLevel(logging.DEBUG)
+
 
 class MqttReader(threading.Thread):
     def __init__(self, name, event, queue, config):
@@ -18,7 +18,8 @@ class MqttReader(threading.Thread):
         # MQTT Broker configuration
         self.broker = self.config["broker"]
         self.port = int(self.config["port"])
-        self.uplink_topic = self.config.get("topics", {}).get("uplink_topic", "")
+        # Now using enriched data from fog nodes – update topic accordingly in your configuration (e.g., "fog/+/processed")
+        self.uplink_topic = self.config.get("topics", {}).get("processed_topic", "")
         self.keepalive = self.config["connection"]["keepalive"]
 
         if not self.uplink_topic:
@@ -44,30 +45,20 @@ class MqttReader(threading.Thread):
         return False
 
     def __on_message(self, client, userdata, msg):
-        """Handle received MQTT messages."""
+        """Handle received MQTT messages with enriched payload."""
         logger.info(f"Message received from MQTT topic {msg.topic}")
         try:
-            # Decode and parse the payload
             data = msg.payload.decode()
             logger.debug(f"Raw Payload: {data}")
             parsed_data = json.loads(data)
 
-            # Extract and decode base64 payload
-            dev_eui = parsed_data.get("deviceInfo", {}).get("devEui", "Unknown")
-            payload = parsed_data.get("data", "")
+            # Expect the payload to already include required keys like "devEUI" and "decodedPayload".
+            if "device_eui" not in parsed_data:
+                logger.warning("No 'devEUI' found in the payload; please check fog node output structure.")
 
-            if payload:
-                decoded_payload = base64.b64decode(payload).decode()
-                logger.info(f"Device EUI: {dev_eui}, Decoded Payload: {decoded_payload}")
-
-                # Adding parsed and decoded data to the queue
-                self.queue.put({
-                    "devEUI": dev_eui,
-                    "decodedPayload": decoded_payload
-                    #"timestamp": parsed_data.get("rxInfo", [{}])[0].get("time"),
-                })
-            else:
-                logger.warning("No payload found in the message.")
+            # Directly queue the enriched data
+            self.queue.put(parsed_data)
+            logger.info(f"Enriched data queued: {parsed_data}")
         except json.JSONDecodeError as e:
             logger.error(f"JSON decoding failed: {e}")
         except Exception as e:
@@ -81,11 +72,18 @@ class MqttReader(threading.Thread):
             return
 
         self.client.on_message = self.__on_message
-        self.client.subscribe(self.uplink_topic, qos=1)
-        self.client.loop_start()
 
+        # ADD THIS TO DEBUG SUBSCRIPTION SUCCESS
+        def on_subscribe(client, userdata, mid, granted_qos):
+            logger.info(f"✅ Successfully subscribed to {self.uplink_topic} with QoS {granted_qos}")
+
+        self.client.on_subscribe = on_subscribe
+        self.client.subscribe(self.uplink_topic, qos=1)
+
+        self.client.loop_start()
         while not self.event.is_set():
             self.event.wait(60)
 
         self.client.loop_stop()
         logger.info(f"Stopped: {self.name}")
+
