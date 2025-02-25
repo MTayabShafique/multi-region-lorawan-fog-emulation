@@ -4,37 +4,37 @@ services:
   mqtt:
     image: eclipse-mosquitto
     ports:
-      - "1888:1883"
+      - "1888:1883"  # Expose MQTT on internal port 1883
     volumes:
       - ./config/mosquitto.conf:/mosquitto/config/mosquitto.conf
     networks:
-      - dynamic-fog-nodes_default
+      - fog-sensiot_network
     restart: always
 
   fog_manager:
     build: ./fog-manager
     environment:
       - DOCKER_HOST=unix:///var/run/docker.sock
-      - MQTT_BROKER=mqtt
+      - MQTT_BROKER=mqtt  # Fog Manager uses "mqtt" as hostname
       - MQTT_PORT=1883
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock  # Read-only mount
+      - /var/run/docker.sock:/var/run/docker.sock
       - ./config:/app/config
-    user: "1000:984"  # Explicit UID:GID (match your host's docker group ID)
+    user: "1000:984"
     depends_on:
       - mqtt
     networks:
-      - dynamic-fog-nodes_default
+      - fog-sensiot_network
       - eu868_eu868_network
       - us915_0_us915_network
     dns:
-      - 8.8.8.8  # Google's public DNS
+      - 8.8.8.8
       - 8.8.4.4
     restart: unless-stopped
 
 networks:
-  dynamic-fog-nodes_default:
-    driver: bridge
+  fog-sensiot_network:
+    external: true
   eu868_eu868_network:
     external: true
   us915_0_us915_network:

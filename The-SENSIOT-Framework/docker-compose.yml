@@ -2,39 +2,55 @@ version: '3.3'
 
 networks:
   backend:
+  fog-sensiot_network:  # Shared network for SensIoT and Fog Nodes
+    external: true  # Ensures it connects to the Fog Node network
 
 services:
   #############################
+  # MQTT Broker (Mosquitto)    #
+  #############################
+  sensiot_mqtt_broker:
+    image: eclipse-mosquitto:latest
+    restart: unless-stopped
+    ports:
+      - "1882:1883"  # Expose MQTT for external testing (optional)
+    volumes:
+      - ./config/mosquitto:/mosquitto/config
+    networks:
+      - backend
+      - fog-sensiot_network  # Connect to Fog Node network
 
   #############################
   # Memcached Service         #
   #############################
   memcached:
     image: memcached:latest
-    command: memcached -m 128 -vv  # memcached -m 128 -vv  # Limits memory usage to 128MB
+    command: memcached -m 128 -vv  # Limits memory usage to 128MB
     restart: on-failure
     deploy:
       resources:
         limits:
           memory: 150M
     networks:
-      backend:
+      - backend
+      - fog-sensiot_network  # Connect to Fog Node network
 
   memcached_exporter:
     image: prom/memcached-exporter
     restart: unless-stopped
     ports:
       - "9150:9150"
-    command: # Explicitly define the connection to Memcached
+    command:
       - "--memcached.address=memcached:11211"
     depends_on:
       - memcached
     networks:
-      backend:
+      - backend
+      - fog-sensiot_network
 
   #############################
-# InfluxDB Service          #
-#############################
+  # InfluxDB Service          #
+  #############################
   influxdb:
     image: influxdb:latest
     restart: on-failure
@@ -49,7 +65,8 @@ services:
     ports:
       - "8086:8086"
     networks:
-      backend:
+      - backend
+      - fog-sensiot_network
 
   #############################
   # Chronograf UI             #
@@ -61,7 +78,8 @@ services:
       - influxdb
     command: chronograf --influxdb-url=http://influxdb:8086
     networks:
-      backend:
+      - backend
+      - fog-sensiot_network
     ports:
       - "8888:8888"
 
@@ -79,7 +97,8 @@ services:
     volumes:
       - ./config/grafana/provisioning:/etc/grafana/provisioning
     networks:
-      backend:
+      - backend
+      - fog-sensiot_network
     ports:
       - "3000:3000"
 
@@ -87,14 +106,15 @@ services:
   # Prometheus Service        #
   #############################
   prometheus:
-    image: unibaktr/prometheus
+    image: prom/prometheus:latest
     restart: on-failure
     volumes:
       - ./config/prometheus:/etc/prometheus/
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
     networks:
-      backend:
+      - backend
+      - fog-sensiot_network
     ports:
       - "9090:9090"
 
@@ -109,7 +129,8 @@ services:
       - ./config/sensiot.json:/app/sensiot.json
       - ./config/local_configuration.json:/etc/sensiot/local_configuration.json
     networks:
-      backend:
+      - backend
+      - fog-sensiot_network
     tty: true
     environment:
       CONFIG: ./sensiot.json
@@ -126,7 +147,8 @@ services:
     volumes:
       - ./config/sensiot.json:/app/sensiot.json
     networks:
-      backend:
+      - backend
+      - fog-sensiot_network
     tty: true
     environment:
       CONFIG: ./sensiot.json
@@ -143,7 +165,8 @@ services:
     volumes:
       - ./config/sensiot.json:/app/sensiot.json
     networks:
-      backend:
+      - backend
+      - fog-sensiot_network
     tty: true
     environment:
       CONFIG: ./sensiot.json
@@ -160,7 +183,8 @@ services:
     volumes:
       - ./config/sensiot.json:/app/sensiot.json
     networks:
-      backend:
+      - backend
+      - fog-sensiot_network
     tty: true
     environment:
       CONFIG: ./sensiot.json
@@ -179,7 +203,8 @@ services:
     volumes:
       - ./config/sensiot.json:/app/sensiot.json
     networks:
-      backend:
+      - backend
+      - fog-sensiot_network
     ports:
       - "5001:5000"
     tty: true
@@ -187,9 +212,5 @@ services:
       CONFIG: ./sensiot.json
       SERVICE: "web"
 
-
-  ##############################
-  # Volumes                    #
-  ##############################
 volumes:
-    influxdb_data:  # Named volume for InfluxDB persistence
+  influxdb_data:

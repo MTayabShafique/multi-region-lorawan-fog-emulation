@@ -22,6 +22,7 @@ class Services:
             if not service_config:
                 raise ValueError(f"Missing or invalid configuration for service: {service}")
 
+        # Updated: MQTT messages are now expected to be enriched from fog nodes.
         self.services = {
             "influxdb_writer": self.__create_influxdb,
             "prometheus_writer": self.__create_prometheus,
@@ -42,10 +43,10 @@ class Services:
     def __create_sensor_data_memcache(self):
         try:
             threads = []
-
             queue_size = self.config.get("queue_size", 10)
             sensor_data_queue = Queue(maxsize=queue_size)
 
+            # MqttReader now receives enriched data from fog nodes.
             mqtt_reader = MqttReader(
                 "SensorData_Memcache_MqttReader",
                 self.event,
@@ -69,7 +70,6 @@ class Services:
     def __create_influxdb(self):
         try:
             threads = []
-
             queue_size = self.config.get("queue_size", 10)
             influxdb_queue = Queue(maxsize=queue_size)
 
@@ -96,7 +96,6 @@ class Services:
     def __create_prometheus(self):
         try:
             threads = []
-
             queue_size = self.config.get("queue_size", 10)
             prometheus_queue = Queue(maxsize=queue_size)
 

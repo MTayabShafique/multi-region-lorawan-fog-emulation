@@ -9,41 +9,47 @@ logger.setLevel(logging.DEBUG)
 class InfluxDBConverter:
     @staticmethod
     def convert_to_influxdb_format(payload):
-        """Convert payload to InfluxDB Point format."""
+        """Convert enriched payload to InfluxDB Point format."""
         try:
             logger.debug(f"Converting payload: {payload}")
 
-            # Ensure decodedPayload is a dictionary
-            if isinstance(payload["decodedPayload"], str):
-                try:
-                    payload["decodedPayload"] = json.loads(payload["decodedPayload"])
-                    logger.debug(f"Converted decodedPayload JSON string to dictionary: {payload['decodedPayload']}")
-                except json.JSONDecodeError:
-                    logger.error(f"Failed to parse JSON decodedPayload: {payload['decodedPayload']}")
-                    return None
+            # Use sensor_data directly from payload
+            sensor_data = payload.get("sensor_data", {})
+            if not sensor_data:
+                logger.warning("No sensor_data found in payload.")
 
-            decoded_payload = payload["decodedPayload"]
+            # Extract sensor fields; default to 0 if missing
+            temperature = float(sensor_data.get("temperature", 0))
+            humidity = float(sensor_data.get("humidity", 0))
+            # Optionally, extract additional fields
+            rssi = payload.get("rssi")
+            snr = payload.get("snr")
+            frequency = payload.get("frequency")
+            channel = payload.get("channel")
 
-            logger.debug(f"Decoded payload: {decoded_payload}")
+            logger.debug(f"Extracted fields - Temperature: {temperature}, Humidity: {humidity}")
 
-            # Extract temperature and humidity from decoded payload
-            fields = {
-                "temperature": float(decoded_payload["temperature"]),
-                "humidity": float(decoded_payload["humidity"])
-            }
-
-            logger.debug(f"Extracted fields - Temperature: {fields['temperature']}, Humidity: {fields['humidity']}")
-
-            # Create an InfluxDB Point
+            # Create an InfluxDB Point for measurement "sensor_data"
             point = (
                 Point("sensor_data")
-                .tag("device_eui", payload.get("devEUI"))
-                .field("temperature", fields["temperature"])
-                .field("humidity", fields["humidity"])
-                .time(payload.get("timestamp"))  # Optional timestamp
+                .tag("device_eui", payload.get("device_eui", "unknown"))
+                .tag("device_name", payload.get("device_name", "unknown"))
+                .tag("region", payload.get("region", "unknown"))
+                .field("temperature", temperature)
+                .field("humidity", humidity)
             )
 
+            # Add additional fields if available
+            if rssi is not None:
+                point.field("rssi", rssi)
+            if snr is not None:
+                point.field("snr", snr)
+
+            # Set the timestamp (assumes the payload's timestamp is in a valid format)
+            point.time(payload.get("timestamp"))
+
+            logger.debug(f"Created InfluxDB point: {point.to_line_protocol()}")
             return point
-        except (json.JSONDecodeError, KeyError, ValueError) as e:
+        except Exception as e:
             logger.error(f"Failed to convert payload to InfluxDB format: {e}")
             return None
