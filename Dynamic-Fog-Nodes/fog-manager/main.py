@@ -46,10 +46,10 @@ def main():
     mqtt_mgr.start()
 
     # 🔹 Test message routing to verify MQTT connectivity
-    test_message = '{"data": "Hello from Fog Manager!"}'
-    region = "us915_0"  # You can change this dynamically based on test cases
-    logger.info(f"📤 Sending test message to region {region}...")
-    mqtt_publisher.route_message(region, test_message)
+    #test_message = '{"data": "Hello from Fog Manager!"}'
+    #region = "us915_0"  # You can change this dynamically based on test cases
+   # logger.info(f"📤 Sending test message to region {region}...")
+   # mqtt_publisher.route_message(region, test_message)
 
     try:
         while True:

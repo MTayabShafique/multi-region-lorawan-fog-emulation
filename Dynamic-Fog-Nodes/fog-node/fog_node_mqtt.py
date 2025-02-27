@@ -2,13 +2,11 @@ import os
 import json
 import logging
 import paho.mqtt.client as mqtt
-from data_processor import extract_relevant_data, add_metadata
+from data_processors.data_processor import extract_relevant_data, add_metadata
 
-# Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
-# Environment variables
 REGION = os.getenv("FOG_REGION", "unknown")
 BROKER_ADDRESS = os.getenv("MQTT_BROKER", "mqtt")
 BROKER_PORT = int(os.getenv("MQTT_PORT", 1883))
@@ -25,21 +23,23 @@ def on_connect(client, userdata, flags, rc):
 
 def on_message(client, userdata, msg):
     payload_str = msg.payload.decode('utf-8')
-    logger.info(f"📩 Received uplink on {msg.topic}: {payload_str}")
+    logger.info(f"📩 Received message on topic {msg.topic}: {payload_str}")
 
     try:
         uplink_message = json.loads(payload_str)
-        processed_data = extract_relevant_data(uplink_message)
-        enriched_data = add_metadata(processed_data, f"fog_node_{REGION}")
-        logger.info(f"📝 Processed Data (before publishing): {json.dumps(enriched_data, indent=2)}")
-
-        # Publish processed data
-        client.publish(PUBLISH_TOPIC, json.dumps(enriched_data), qos=1)
-        logger.info(f"🚀 Published processed data to {PUBLISH_TOPIC}")
-
-
     except json.JSONDecodeError:
         logger.error("❌ Error: Received non-JSON payload.")
+        return
+
+    processed_data = extract_relevant_data(uplink_message)
+    if processed_data is None:
+        logger.info("Message ignored due to lack of valid sensor or battery data.")
+        return
+
+    enriched_data = add_metadata(processed_data, f"fog_node_{REGION}")
+    logger.info(f"📝 Processed Data (before publishing): {json.dumps(enriched_data, indent=2)}")
+    client.publish(PUBLISH_TOPIC, json.dumps(enriched_data), qos=1)
+    logger.info(f"🚀 Published processed data to {PUBLISH_TOPIC}")
 
 def start_fog_node_mqtt():
     client = mqtt.Client(client_id=f"fog_node_{REGION}_subscriber", userdata={"region": REGION})
