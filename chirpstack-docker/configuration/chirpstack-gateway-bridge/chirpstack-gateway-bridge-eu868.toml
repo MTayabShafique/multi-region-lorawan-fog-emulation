@@ -1,0 +1,15 @@
+
+
+# MQTT client configuration for gateway bridge
+[integration.mqtt.auth.generic]
+# Use the HAProxy service name (as defined in docker-compose) as the broker host
+servers = ["tcp://haproxy:1883"]
+username = ""
+password = ""
+
+[integration.mqtt]
+# Set topic templates using a region-specific prefix
+event_topic_template = "eu868/gateway/{{ .GatewayID }}/event/{{ .EventType }}"
+state_topic_template = "eu868/gateway/{{ .GatewayID }}/state/{{ .StateType }}"
+command_topic_template = "eu868/gateway/{{ .GatewayID }}/command/#"
+json = true

@@ -3,12 +3,10 @@ import logging
 import os
 from src import globals as g
 
-
-# Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Maintain a set of processed message IDs to prevent duplicate processing
+# Set to keep track of processed messages to avoid duplicates.
 processed_messages = set()
 
 def on_message(client, userdata, msg):
@@ -18,28 +16,23 @@ def on_message(client, userdata, msg):
 
     try:
         uplink_data = json.loads(payload_str)
-
-        # Ensure message is only processed once
         message_id = uplink_data.get("deduplicationId")
         if message_id and message_id in processed_messages:
             logger.warning(f"⚠️ Duplicate message {message_id} ignored.")
             return
-
         if message_id:
             processed_messages.add(message_id)
 
-        # Extract region name with a fallback from environment variables
-        region = uplink_data.get("deviceInfo", {}).get("tags", {}).get("region_name", None)
-
+        # Extract region from the uplink message.
+        region = uplink_data.get("deviceInfo", {}).get("tags", {}).get("region_name")
         if not region:
-            region = os.getenv("DEFAULT_REGION", "unknown_region")  # Fallback if missing
-
+            region = os.getenv("DEFAULT_REGION", "unknown_region")
         logger.info(f"🌍 Routing message to region: {region}")
+
         if g.fog_manager:
             g.fog_manager.route_message(region, payload_str)
         else:
             logger.error("Fog manager instance not set. Cannot route message.")
-
     except json.JSONDecodeError:
         logger.error("❌ Error decoding JSON payload.")
     except Exception as e:
