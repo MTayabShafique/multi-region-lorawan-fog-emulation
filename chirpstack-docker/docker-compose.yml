@@ -1,0 +1,169 @@
+version: '3.7'
+
+networks:
+  lorawan:
+    driver: bridge
+
+services:
+  # Load Balancer (HAProxy)
+  haproxy:
+    image: haproxy:2.6
+    restart: always
+    networks:
+      - lorawan
+    volumes:
+      - ./configuration/haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    ports:
+      - "1883:1883"
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "1883"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # EMQX Cluster - Node 1
+  emqx1:
+    image: emqx:5.0
+    restart: always
+    networks:
+      - lorawan
+    environment:
+      - EMQX_NODE_NAME=emqx@emqx1
+      - EMQX_CLUSTER__DISCOVERY_STRATEGY=static
+      - EMQX_CLUSTER__STATIC__SEEDS=emqx@emqx1,emqx@emqx2
+    ports:
+      - "18083:18083"
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "1883"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # EMQX Cluster - Node 2
+  emqx2:
+    image: emqx:5.0
+    restart: always
+    networks:
+      - lorawan
+    environment:
+      - EMQX_NODE_NAME=emqx@emqx2
+      - EMQX_CLUSTER__DISCOVERY_STRATEGY=static
+      - EMQX_CLUSTER__STATIC__SEEDS=emqx@emqx1,emqx@emqx2
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "1883"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ChirpStack Core
+  chirpstack:
+    image: chirpstack/chirpstack:4
+    command: -c /etc/chirpstack
+    restart: always
+    networks:
+      - lorawan
+    volumes:
+      - ./configuration/chirpstack:/etc/chirpstack
+      - ./wait-for-haproxy.sh:/app/wait-for-haproxy.sh
+    depends_on:
+      - postgres
+      - redis
+      - haproxy
+    environment:
+      - MQTT_BROKER_HOST=haproxy
+      - REDIS_HOST=redis
+      - POSTGRESQL_HOST=postgres
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Gateway Bridge EU868
+  chirpstack-gateway-bridge-eu868:
+    image: chirpstack/chirpstack-gateway-bridge:4
+    restart: always
+    networks:
+      - lorawan
+    ports:
+      - "1700:1700/udp"
+    volumes:
+      - ./configuration/chirpstack-gateway-bridge/chirpstack-gateway-bridge-eu868.toml:/etc/chirpstack-gateway-bridge/chirpstack-gateway-bridge.toml
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Gateway Bridge US915
+  chirpstack-gateway-bridge-us915:
+    image: chirpstack/chirpstack-gateway-bridge:4
+    restart: always
+    networks:
+      - lorawan
+    ports:
+      - "1701:1700/udp"
+    volumes:
+      - ./configuration/chirpstack-gateway-bridge/chirpstack-gateway-bridge-us915_0.toml:/etc/chirpstack-gateway-bridge/chirpstack-gateway-bridge.toml
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ChirpStack REST API
+  chirpstack-rest-api:
+    image: chirpstack/chirpstack-rest-api:4
+    restart: always
+    networks:
+      - lorawan
+    command: --server chirpstack:8080 --bind 0.0.0.0:8090 --insecure
+    ports:
+      - "8090:8090"
+    depends_on:
+      - chirpstack
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8090/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:14-alpine
+    restart: always
+    networks:
+      - lorawan
+    volumes:
+      - ./configuration/postgresql/initdb:/docker-entrypoint-initdb.d
+      - postgresqldata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=chirpstack
+      - POSTGRES_PASSWORD=chirpstack
+      - POSTGRES_DB=chirpstack
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "chirpstack"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Database
+  redis:
+    image: redis:7-alpine
+    restart: always
+    networks:
+      - lorawan
+    command: redis-server --save 300 1 --save 60 100 --appendonly no
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgresqldata:
+  redisdata:
