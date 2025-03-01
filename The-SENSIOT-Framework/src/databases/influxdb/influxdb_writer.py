@@ -9,6 +9,7 @@ from influxdb_client.client.write_api import SYNCHRONOUS
 logger = logging.getLogger("sensiot")
 logger.setLevel(logging.DEBUG)
 
+
 class InfluxDBWriter(threading.Thread):
     def __init__(self, name, event, queue, config):
         super().__init__()
@@ -25,7 +26,8 @@ class InfluxDBWriter(threading.Thread):
         self.influxdb_bucket = self.config.get("bucket")
         self.influxdb_measurements = self.config.get("measurements")
 
-        logger.debug(f"InfluxDB Config - URL: {self.influxdb_url}, Token: {self.influxdb_token}, Org: {self.influxdb_org}, Bucket: {self.influxdb_bucket}, Measurements: {self.influxdb_measurements}")
+        logger.debug(
+            f"InfluxDB Config - URL: {self.influxdb_url}, Token: {self.influxdb_token}, Org: {self.influxdb_org}, Bucket: {self.influxdb_bucket}, Measurements: {self.influxdb_measurements}")
 
         if not self.influxdb_token or not self.influxdb_org or not self.influxdb_bucket:
             logger.error("InfluxDB configuration is incomplete. Ensure 'token', 'org', and 'bucket' are specified.")
@@ -74,7 +76,15 @@ class InfluxDBWriter(threading.Thread):
                             logger.error(f"Error decoding JSON payload: {payload}")
                             continue
 
-                    influx_data = InfluxDBConverter.convert_to_influxdb_format(payload)
+                    # Determine whether to convert sensor data or battery data.
+                    influx_data = None
+                    if "sensor_data" in payload and payload["sensor_data"]:
+                        influx_data = InfluxDBConverter.convert_to_influxdb_format(payload)
+                    elif "battery_data" in payload and payload["battery_data"]:
+                        influx_data = InfluxDBConverter.convert_battery_to_influxdb_format(payload)
+                    else:
+                        logger.warning("No valid sensor_data or battery_data found in payload; skipping conversion.")
+
                     if influx_data:
                         logger.debug(f"Converted payload to InfluxDB format: {influx_data.to_line_protocol()}")
                         self.write_to_influxdb(influx_data)

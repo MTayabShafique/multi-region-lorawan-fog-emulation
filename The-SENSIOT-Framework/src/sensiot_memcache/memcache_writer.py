@@ -6,7 +6,6 @@ import memcache as memcache_lib
 logger = logging.getLogger("sensiot")
 logger.setLevel(logging.INFO)
 
-
 class MemcacheWriter(threading.Thread):
     def __init__(self, name, event, queue, config):
         super().__init__()
