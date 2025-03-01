@@ -1,10 +1,10 @@
 import logging
 import threading
+import json
 import memcache as memcache_lib
 
 logger = logging.getLogger("sensiot")
 logger.setLevel(logging.INFO)
-
 
 class MemcacheWriter(threading.Thread):
     def __init__(self, name, event, queue, config):
@@ -15,7 +15,6 @@ class MemcacheWriter(threading.Thread):
         self.config = config
 
         # Memcache configuration
-
         self.memcache_host = self.config.get("ip", "localhost")  # Default to localhost if not provided
         self.memcache_port = int(self.config.get("port", 11211))  # Default to port 11211
         self.key_expiration = int(self.config.get("key_expiration", 600))  # Default to 600 seconds
@@ -44,7 +43,7 @@ class MemcacheWriter(threading.Thread):
             return False
 
     def run(self):
-        """Process messages from the queue and store them in Memcached."""
+        """Process messages from the queue and store the complete payload in Memcached."""
         logger.info(f"Started: {self.name}")
 
         if not self.__connect_memcache():
@@ -55,8 +54,21 @@ class MemcacheWriter(threading.Thread):
             try:
                 if not self.queue.empty():
                     payload = self.queue.get()
-                    device_id = payload["devEUI"]
-                    self.memcache_client.set(device_id, payload, time=self.key_expiration)
+
+                    # Use the key 'device_eui' from the payload
+                    device_id = payload["device_eui"]
+
+                    # Ensure a backup key list exists
+                    existing_keys = self.memcache_client.get("all_keys") or []
+
+                    if device_id not in existing_keys:
+                        existing_keys.append(device_id)
+                        self.memcache_client.set("all_keys", existing_keys, time=self.key_expiration)
+                        logger.debug(f"Updated key list in Memcached: {existing_keys}")
+
+                    # Store the complete payload as JSON without additional conversion
+                    json_payload = json.dumps(payload)
+                    self.memcache_client.set(device_id, json_payload, time=self.key_expiration)
                     logger.info(f"Stored data for device {device_id} in Memcached: {payload}")
             except Exception as e:
                 logger.error(f"Error while storing data in Memcached: {e}")

@@ -2,6 +2,7 @@ import logging
 import os
 from multiprocessing import Queue
 from utilities.mqtt.mqtt_reader import MqttReader
+from sensiot_memcache.memcache_reader import MemcacheReader
 from sensiot_memcache.memcache_writer import MemcacheWriter
 from databases.influxdb.influxdb_writer import InfluxDBWriter
 from databases.prometheus.prometheus_writer import PrometheusWriter
@@ -21,6 +22,7 @@ class Services:
             if not service_config:
                 raise ValueError(f"Missing or invalid configuration for service: {service}")
 
+        # Updated: MQTT messages are now expected to be enriched from fog nodes.
         self.services = {
             "influxdb_writer": self.__create_influxdb,
             "prometheus_writer": self.__create_prometheus,
@@ -41,10 +43,10 @@ class Services:
     def __create_sensor_data_memcache(self):
         try:
             threads = []
-
             queue_size = self.config.get("queue_size", 10)
             sensor_data_queue = Queue(maxsize=queue_size)
 
+            # MqttReader now receives enriched data from fog nodes.
             mqtt_reader = MqttReader(
                 "SensorData_Memcache_MqttReader",
                 self.event,
@@ -68,15 +70,14 @@ class Services:
     def __create_influxdb(self):
         try:
             threads = []
-
             queue_size = self.config.get("queue_size", 10)
             influxdb_queue = Queue(maxsize=queue_size)
 
-            mqtt_reader = MqttReader(
-                "InfluxDB_MqttReader",
+            memcache_reader = MemcacheReader(
+                "InfluxDB_MemcacheReader",
                 self.event,
                 influxdb_queue,
-                self.config['services']['mqtt'],
+                self.config['services']['memcached'],
             )
             influxdb_writer = InfluxDBWriter(
                 "InfluxDB_Writer",
@@ -85,7 +86,7 @@ class Services:
                 self.config['services']['influxdb_writer'],
             )
 
-            threads.extend([mqtt_reader, influxdb_writer])
+            threads.extend([memcache_reader, influxdb_writer])
             logger.info("InfluxDB Writer service initialized successfully.")
             return threads
         except Exception as e:
@@ -95,15 +96,14 @@ class Services:
     def __create_prometheus(self):
         try:
             threads = []
-
             queue_size = self.config.get("queue_size", 10)
             prometheus_queue = Queue(maxsize=queue_size)
 
-            mqtt_reader = MqttReader(
-                "Prometheus_MqttReader",
+            memcache_reader = MemcacheReader(
+                "Prometheus_MemcacheReader",
                 self.event,
                 prometheus_queue,
-                self.config['services']['mqtt'],
+                self.config['services']['memcached'],
             )
             prometheus_writer = PrometheusWriter(
                 "Prometheus_Writer",
@@ -112,7 +112,7 @@ class Services:
                 self.config['services']['prometheus_writer'],
             )
 
-            threads.extend([mqtt_reader, prometheus_writer])
+            threads.extend([memcache_reader, prometheus_writer])
             logger.info("Prometheus Writer service initialized successfully.")
             return threads
         except Exception as e:

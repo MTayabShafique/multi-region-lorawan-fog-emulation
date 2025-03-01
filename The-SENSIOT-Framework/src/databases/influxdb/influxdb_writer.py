@@ -1,13 +1,14 @@
 import time
 import logging
 import threading
+import json
 from databases.influxdb.influxdb_converter import InfluxDBConverter
-from influxdb_client import InfluxDBClient, Point
+from influxdb_client import InfluxDBClient
 from influxdb_client.client.write_api import SYNCHRONOUS
 
-# Initialize the logger
 logger = logging.getLogger("sensiot")
 logger.setLevel(logging.DEBUG)
+
 
 class InfluxDBWriter(threading.Thread):
     def __init__(self, name, event, queue, config):
@@ -17,25 +18,21 @@ class InfluxDBWriter(threading.Thread):
         self.queue = queue
         self.config = config
 
-        # Debugging: Log the entire configuration passed
         logger.debug(f"Complete configuration passed to InfluxDBWriter: {self.config}")
 
-        # Directly use self.config to extract the keys
         self.influxdb_url = f"http://{self.config.get('ip', '127.0.0.1')}:{self.config.get('port', 8086)}"
         self.influxdb_token = self.config.get("token")
         self.influxdb_org = self.config.get("org")
         self.influxdb_bucket = self.config.get("bucket")
+        self.influxdb_measurements = self.config.get("measurements")
 
-        # Debug the extracted configuration
-        logger.debug(f"InfluxDB Config - URL: {self.influxdb_url}, Token: {self.influxdb_token}, "
-                     f"Org: {self.influxdb_org}, Bucket: {self.influxdb_bucket}")
+        logger.debug(
+            f"InfluxDB Config - URL: {self.influxdb_url}, Token: {self.influxdb_token}, Org: {self.influxdb_org}, Bucket: {self.influxdb_bucket}, Measurements: {self.influxdb_measurements}")
 
-        # Validate the configuration
         if not self.influxdb_token or not self.influxdb_org or not self.influxdb_bucket:
             logger.error("InfluxDB configuration is incomplete. Ensure 'token', 'org', and 'bucket' are specified.")
             raise ValueError("InfluxDB configuration is incomplete.")
 
-        # Initialize the InfluxDB client
         try:
             self.influx_client = InfluxDBClient(
                 url=self.influxdb_url,
@@ -51,13 +48,13 @@ class InfluxDBWriter(threading.Thread):
     def write_to_influxdb(self, influx_data):
         """Write formatted data to InfluxDB."""
         try:
-            logger.debug(f"Writing data to InfluxDB: {influx_data}")
+            logger.debug(f"Writing data to InfluxDB: {influx_data.to_line_protocol()}")
             self.write_api.write(
                 bucket=self.influxdb_bucket,
                 org=self.influxdb_org,
                 record=influx_data
             )
-            logger.info(f"Data written to InfluxDB successfully: {influx_data}")
+            logger.info(f"Data written to InfluxDB successfully: {influx_data.to_line_protocol()}")
         except Exception as e:
             logger.error(f"Error writing to InfluxDB: {e}")
 
@@ -68,10 +65,28 @@ class InfluxDBWriter(threading.Thread):
             try:
                 if not self.queue.empty():
                     payload = self.queue.get()
-                    logger.debug(f"Retrieved payload from queue: {payload}")
-                    influx_data = InfluxDBConverter.convert_to_influxdb_format(payload)
+                    logger.debug(f"Fetched payload from Memcached: {payload}")
+
+                    # Convert payload from JSON string to dictionary if needed
+                    if isinstance(payload, str):
+                        try:
+                            payload = json.loads(payload)
+                            logger.debug(f"Converted JSON string to dictionary: {payload}")
+                        except json.JSONDecodeError:
+                            logger.error(f"Error decoding JSON payload: {payload}")
+                            continue
+
+                    # Determine whether to convert sensor data or battery data.
+                    influx_data = None
+                    if "sensor_data" in payload and payload["sensor_data"]:
+                        influx_data = InfluxDBConverter.convert_to_influxdb_format(payload)
+                    elif "battery_data" in payload and payload["battery_data"]:
+                        influx_data = InfluxDBConverter.convert_battery_to_influxdb_format(payload)
+                    else:
+                        logger.warning("No valid sensor_data or battery_data found in payload; skipping conversion.")
+
                     if influx_data:
-                        logger.debug(f"Converted payload to InfluxDB format: {influx_data}")
+                        logger.debug(f"Converted payload to InfluxDB format: {influx_data.to_line_protocol()}")
                         self.write_to_influxdb(influx_data)
                     else:
                         logger.warning("Conversion returned no data")

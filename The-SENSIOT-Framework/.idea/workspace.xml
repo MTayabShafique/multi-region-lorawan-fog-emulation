@@ -7,12 +7,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="edd25f0f-2fbd-4370-a3b0-10ad51789c2a" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/The-SENSIOT-Framework.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/The-SENSIOT-Framework.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/sensiot.json" beforeDir="false" afterPath="$PROJECT_DIR$/config/sensiot.json" afterDir="false" />
-    </list>
+    <list default="true" id="edd25f0f-2fbd-4370-a3b0-10ad51789c2a" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -61,8 +56,8 @@
     "Python.web.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "feature-5/prometheus-grafana",
-    "last_opened_file_path": "/home/tayyab/Thesis/code/The-SENSIOT-Framework",
+    "git-widget-placeholder": "feature-12/simplify-chirpstack-to-fog",
+    "last_opened_file_path": "/home/tayyab/Thesis/code/Dynamic-Fog-Nodes",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -162,8 +157,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-deb605915726-JavaScript-PY-243.22562.180" />
-        <option value="bundled-python-sdk-85c76a3b01b3-9a18a617cbe4-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-243.22562.180" />
+        <option value="bundled-js-predefined-d6986cc7102b-1632447f56bf-JavaScript-PY-243.25659.43" />
+        <option value="bundled-python-sdk-181015f7ab06-4df51de95216-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-243.25659.43" />
       </set>
     </attachedChunks>
   </component>
@@ -201,7 +196,23 @@
       <workItem from="1738251536026" duration="30595000" />
       <workItem from="1738358480336" duration="1997000" />
       <workItem from="1738441394263" duration="10700000" />
-      <workItem from="1738458422098" duration="3230000" />
+      <workItem from="1738458422098" duration="3769000" />
+      <workItem from="1738526914181" duration="104000" />
+      <workItem from="1738527513053" duration="3265000" />
+      <workItem from="1738531908982" duration="16540000" />
+      <workItem from="1738624776106" duration="76000" />
+      <workItem from="1738696279368" duration="2375000" />
+      <workItem from="1738788809683" duration="5119000" />
+      <workItem from="1739273075123" duration="738000" />
+      <workItem from="1739480029687" duration="3069000" />
+      <workItem from="1740181317204" duration="2522000" />
+      <workItem from="1740434169013" duration="910000" />
+      <workItem from="1740488673411" duration="14136000" />
+      <workItem from="1740521666011" duration="5461000" />
+      <workItem from="1740605791707" duration="1865000" />
+      <workItem from="1740697692654" duration="2477000" />
+      <workItem from="1740753512563" duration="11054000" />
+      <workItem from="1740839705042" duration="639000" />
     </task>
     <servers />
   </component>
@@ -230,6 +241,10 @@
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/web/web.py</url>
           <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/sensors/temperature_humidity/sensor_mock.py</url>
+          <option name="timeStamp" value="2" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
