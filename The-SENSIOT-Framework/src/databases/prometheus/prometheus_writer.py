@@ -26,6 +26,12 @@ class PrometheusWriter(threading.Thread):
         self.rssi_gauge = Gauge("sensor_rssi", "RSSI of sensors", ["region", "device_id"])
         self.snr_gauge = Gauge("sensor_snr", "SNR of sensors", ["region", "device_id"])
 
+        # Prometheus Gauges for battery metrics with labels for region and device_id
+        self.battery_level_gauge = Gauge("battery_level", "Battery level of sensors", ["region", "device_id"])
+        self.battery_margin_gauge = Gauge("battery_margin", "Battery margin of sensors", ["region", "device_id"])
+        self.external_power_gauge = Gauge("external_power_source", "External power source flag (1 = yes, 0 = no)", ["region", "device_id"])
+        self.battery_unavailable_gauge = Gauge("battery_unavailable", "Battery level unavailable flag (1 = yes, 0 = no)", ["region", "device_id"])
+
         logger.info(f"{self.name} initialized successfully on port {self.port}")
 
     def run(self):
@@ -37,7 +43,7 @@ class PrometheusWriter(threading.Thread):
             while not self.queue.empty():
                 try:
                     payload = self.queue.get()
-                    logger.info(f"Fetched sensor data from MemcacheReader queue: {payload}")
+                    logger.info(f"Fetched data from MemcacheReader queue: {payload}")
                     if self._process_data(payload):
                         logger.info("Processed payload and updated Prometheus metrics")
                     else:
@@ -54,56 +60,102 @@ class PrometheusWriter(threading.Thread):
                 logger.error(f"Invalid payload format: {payload}")
                 return False
 
-            # Use device_eui from payload; default to "unknown"
             device_id = payload.get("device_eui", "unknown")
-            # Use region from payload; default to "unknown"
             region = payload.get("region", "unknown")
 
-            # Try to get sensor data either from "decodedPayload" or fallback to "sensor_data"
+            # Extract sensor data (from sensor_data or decodedPayload if you prefer)
+            sensor_info = {}
             if "decodedPayload" in payload:
-                sensor_info = payload["decodedPayload"]
-                if isinstance(sensor_info, str):
-                    try:
-                        sensor_info = json.loads(sensor_info)
-                        logger.debug(f"Converted decodedPayload JSON string to dictionary: {sensor_info}")
-                    except json.JSONDecodeError:
-                        logger.error(f"Failed to parse JSON in decodedPayload: {sensor_info}")
-                        return False
+                sensor_info = self._parse_decoded_payload(payload["decodedPayload"])
             else:
                 sensor_info = payload.get("sensor_data", {})
 
-            temperature = sensor_info.get("temperature")
-            humidity = sensor_info.get("humidity")
-            rssi = payload.get("rssi")
-            snr = payload.get("snr")
+            # Extract battery data if present
+            battery_data = payload.get("battery_data", {})
 
-            logger.info(f"Processed Payload: Region={region}, Device={device_id}, Temp={temperature}, Humidity={humidity}, RSSI={rssi}, SNR={snr}")
+            # Update sensor metrics if sensor data is found
+            self._update_sensor_metrics(sensor_info, region, device_id)
 
-            if temperature is not None:
-                self.temperature_gauge.labels(region=region, device_id=device_id).set(temperature)
-                logger.info(f"Updated temperature for region={region}, device_id={device_id}: {temperature}")
-            else:
-                logger.warning(f"Missing temperature in sensor_info: {sensor_info}")
-
-            if humidity is not None:
-                self.humidity_gauge.labels(region=region, device_id=device_id).set(humidity)
-                logger.info(f"Updated humidity for region={region}, device_id={device_id}: {humidity}")
-            else:
-                logger.warning(f"Missing humidity in sensor_info: {sensor_info}")
-
-            if rssi is not None:
-                self.rssi_gauge.labels(region=region, device_id=device_id).set(rssi)
-                logger.info(f"Updated RSSI for region={region}, device_id={device_id}: {rssi}")
-            else:
-                logger.warning(f"Missing rssi in payload: {payload}")
-
-            if snr is not None:
-                self.snr_gauge.labels(region=region, device_id=device_id).set(snr)
-                logger.info(f"Updated SNR for region={region}, device_id={device_id}: {snr}")
-            else:
-                logger.warning(f"Missing snr in payload: {payload}")
+            # Update battery metrics if battery data is found
+            self._update_battery_metrics(battery_data, region, device_id)
 
             return True
         except Exception as e:
             logger.error(f"Failed to process data for Prometheus: {e}")
             return False
+
+    def _parse_decoded_payload(self, decoded_payload):
+        """Parse a decodedPayload if it's a JSON string; otherwise, return dict or empty."""
+        if isinstance(decoded_payload, str):
+            try:
+                return json.loads(decoded_payload)
+            except json.JSONDecodeError:
+                logger.error(f"Failed to parse JSON in decodedPayload: {decoded_payload}")
+                return {}
+        elif isinstance(decoded_payload, dict):
+            return decoded_payload
+        return {}
+
+    def _update_sensor_metrics(self, sensor_info, region, device_id):
+        """Update Prometheus metrics for sensor data."""
+        temperature = sensor_info.get("temperature")
+        humidity = sensor_info.get("humidity")
+
+        if temperature is not None:
+            self.temperature_gauge.labels(region=region, device_id=device_id).set(temperature)
+            logger.info(f"Updated temperature: region={region}, device_id={device_id}, value={temperature}")
+        else:
+            logger.debug(f"No temperature in sensor_info: {sensor_info}")
+
+        if humidity is not None:
+            self.humidity_gauge.labels(region=region, device_id=device_id).set(humidity)
+            logger.info(f"Updated humidity: region={region}, device_id={device_id}, value={humidity}")
+        else:
+            logger.debug(f"No humidity in sensor_info: {sensor_info}")
+
+        # If the payload includes RSSI and SNR in the top-level or sensor_info, handle them here
+        rssi = sensor_info.get("rssi") or sensor_info.get("RSSI")  # or use top-level if needed
+        snr = sensor_info.get("snr") or sensor_info.get("SNR")
+        # If your code stores them at top-level, do:
+        # rssi = payload.get("rssi")
+        # snr = payload.get("snr")
+
+        if rssi is not None:
+            self.rssi_gauge.labels(region=region, device_id=device_id).set(rssi)
+            logger.info(f"Updated RSSI: region={region}, device_id={device_id}, value={rssi}")
+
+        if snr is not None:
+            self.snr_gauge.labels(region=region, device_id=device_id).set(snr)
+            logger.info(f"Updated SNR: region={region}, device_id={device_id}, value={snr}")
+
+    def _update_battery_metrics(self, battery_data, region, device_id):
+        """Update Prometheus metrics for battery data."""
+        if not battery_data:
+            logger.debug("No battery_data found in payload.")
+            return
+
+        # batteryLevel
+        battery_level = battery_data.get("batteryLevel")
+        if battery_level is not None:
+            self.battery_level_gauge.labels(region=region, device_id=device_id).set(battery_level)
+            logger.info(f"Updated batteryLevel: region={region}, device_id={device_id}, value={battery_level}")
+
+        # margin
+        margin = battery_data.get("margin")
+        if margin is not None:
+            self.battery_margin_gauge.labels(region=region, device_id=device_id).set(margin)
+            logger.info(f"Updated battery margin: region={region}, device_id={device_id}, value={margin}")
+
+        # externalPowerSource
+        external_power = battery_data.get("externalPowerSource")
+        if external_power is not None:
+            value = 1 if external_power else 0
+            self.external_power_gauge.labels(region=region, device_id=device_id).set(value)
+            logger.info(f"Updated externalPowerSource: region={region}, device_id={device_id}, value={value}")
+
+        # batteryLevelUnavailable
+        battery_unavail = battery_data.get("batteryLevelUnavailable")
+        if battery_unavail is not None:
+            value = 1 if battery_unavail else 0
+            self.battery_unavailable_gauge.labels(region=region, device_id=device_id).set(value)
+            logger.info(f"Updated batteryLevelUnavailable: region={region}, device_id={device_id}, value={value}")
