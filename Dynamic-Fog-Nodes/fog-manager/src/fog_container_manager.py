@@ -54,7 +54,7 @@ class FogContainerManager:
                 detach=True,
                 environment={
                     "FOG_REGION": region,
-                    "MQTT_BROKER": os.getenv("MQTT_BROKER", "mqtt"),
+                    "MQTT_BROKER": os.getenv("MQTT_BROKER", "haproxy_fog"),
                     "MQTT_PORT": os.getenv("MQTT_PORT", "1883"),
                     "DOCKER_HOST": "unix:///var/run/docker.sock"
                 },
