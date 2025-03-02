@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 class FogMQTTRouter:
     def __init__(self):
         # Read MQTT broker details from environment variables.
-        self.broker_address = os.getenv("MQTT_BROKER_LOCAL", "mqtt")
+        self.broker_address = os.getenv("MQTT_BROKER_LOCAL", "haproxy_fog")
         self.broker_port = int(os.getenv("MQTT_PORT", 1883))
         self.client = mqtt.Client("fog_manager_publisher")
         self.client.on_connect = self.on_connect
@@ -52,7 +52,7 @@ class FogMQTTRouter:
             return
         topic = f"fog/{region}/process"
         logger.info(f"📤 Publishing to topic {topic}: {message}")
-        result = self.client.publish(topic, message, qos=1, retain=True)
+        result = self.client.publish(topic, message, qos=1, retain=True)  #, retain=True
         if result.rc == mqtt.MQTT_ERR_SUCCESS:
             logger.info(f"✅ Message successfully published to {topic}")
         else:

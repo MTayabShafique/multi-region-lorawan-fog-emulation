@@ -30,6 +30,7 @@ services:
     environment:
       - EMQX_NODE_NAME=emqx@emqx1
       - EMQX_CLUSTER__DISCOVERY_STRATEGY=static
+      - EMQX_NODE__COOKIE=secretcookie
       - EMQX_CLUSTER__STATIC__SEEDS=emqx@emqx1,emqx@emqx2
     ports:
       - "18083:18083"
@@ -48,6 +49,7 @@ services:
     environment:
       - EMQX_NODE_NAME=emqx@emqx2
       - EMQX_CLUSTER__DISCOVERY_STRATEGY=static
+      - EMQX_NODE__COOKIE=secretcookie
       - EMQX_CLUSTER__STATIC__SEEDS=emqx@emqx1,emqx@emqx2
     healthcheck:
       test: ["CMD", "nc", "-z", "localhost", "1883"]
