@@ -31,7 +31,7 @@ services:
       - EMQX_NODE_NAME=emqx@emqx1
       - EMQX_CLUSTER__DISCOVERY_STRATEGY=static
       - EMQX_NODE__COOKIE=secretcookie
-      - EMQX_CLUSTER__STATIC__SEEDS=emqx@emqx1,emqx@emqx2
+      - EMQX_CLUSTER__STATIC__SEEDS=emqx@emqx1,emqx@emqx2,emqx@emqx3
     ports:
       - "18083:18083"
     healthcheck:
@@ -50,9 +50,25 @@ services:
       - EMQX_NODE_NAME=emqx@emqx2
       - EMQX_CLUSTER__DISCOVERY_STRATEGY=static
       - EMQX_NODE__COOKIE=secretcookie
-      - EMQX_CLUSTER__STATIC__SEEDS=emqx@emqx1,emqx@emqx2
+      - EMQX_CLUSTER__STATIC__SEEDS=emqx@emqx1,emqx@emqx2,emqx@emqx3
     healthcheck:
       test: ["CMD", "nc", "-z", "localhost", "1883"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  emqx3:
+    image: emqx:5.0
+    restart: always
+    networks:
+      - lorawan
+    environment:
+      - EMQX_NODE_NAME=emqx@emqx3
+      - EMQX_CLUSTER__DISCOVERY_STRATEGY=static
+      - EMQX_NODE__COOKIE=secretcookie
+      - EMQX_CLUSTER__STATIC__SEEDS=emqx@emqx1,emqx@emqx2,emqx@emqx3
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "localhost", "1883" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -111,6 +127,54 @@ services:
       - ./configuration/chirpstack-gateway-bridge/chirpstack-gateway-bridge-us915_0.toml:/etc/chirpstack-gateway-bridge/chirpstack-gateway-bridge.toml
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Gateway Bridge KR920
+  chirpstack-gateway-bridge-kr920:
+    image: chirpstack/chirpstack-gateway-bridge:4
+    restart: always
+    networks:
+      - lorawan
+    ports:
+      - "1702:1700/udp"
+    volumes:
+      - ./configuration/chirpstack-gateway-bridge/chirpstack-gateway-bridge-kr920.toml:/etc/chirpstack-gateway-bridge/chirpstack-gateway-bridge.toml
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Gateway Bridge IN865
+  chirpstack-gateway-bridge-in865:
+    image: chirpstack/chirpstack-gateway-bridge:4
+    restart: always
+    networks:
+      - lorawan
+    ports:
+      - "1703:1700/udp"
+    volumes:
+      - ./configuration/chirpstack-gateway-bridge/chirpstack-gateway-bridge-in865.toml:/etc/chirpstack-gateway-bridge/chirpstack-gateway-bridge.toml
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Gateway Bridge RU864
+  chirpstack-gateway-bridge-ru864:
+    image: chirpstack/chirpstack-gateway-bridge:4
+    restart: always
+    networks:
+      - lorawan
+    ports:
+      - "1704:1700/udp"
+    volumes:
+      - ./configuration/chirpstack-gateway-bridge/chirpstack-gateway-bridge-ru864.toml:/etc/chirpstack-gateway-bridge/chirpstack-gateway-bridge.toml
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/health" ]
       interval: 30s
       timeout: 10s
       retries: 3

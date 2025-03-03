@@ -70,7 +70,6 @@ class PrometheusWriter(threading.Thread):
             else:
                 sensor_info = payload.get("sensor_data", {})
 
-            # Extract battery data if present
             battery_data = payload.get("battery_data", {})
 
             # Update sensor metrics if sensor data is found
@@ -114,7 +113,7 @@ class PrometheusWriter(threading.Thread):
             logger.debug(f"No humidity in sensor_info: {sensor_info}")
 
         # If the payload includes RSSI and SNR in the top-level or sensor_info, handle them here
-        rssi = sensor_info.get("rssi") or sensor_info.get("RSSI")  # or use top-level if needed
+        rssi = sensor_info.get("rssi") or sensor_info.get("RSSI")
         snr = sensor_info.get("snr") or sensor_info.get("SNR")
         # If your code stores them at top-level, do:
         # rssi = payload.get("rssi")
