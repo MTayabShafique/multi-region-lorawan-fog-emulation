@@ -19,7 +19,7 @@
   },
   "services": {
     "mqtt": {
-      "broker": "dynamic-fog-nodes_mqtt_1",
+      "broker": "haproxy_fog",
       "port": 1883,
       "topics": {
         "processed_topic": "fog/+/processed",
