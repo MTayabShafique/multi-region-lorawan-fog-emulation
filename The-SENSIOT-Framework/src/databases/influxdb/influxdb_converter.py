@@ -5,7 +5,6 @@ from influxdb_client import Point
 logger = logging.getLogger("sensiot")
 logger.setLevel(logging.DEBUG)
 
-
 class InfluxDBConverter:
     @staticmethod
     def convert_to_influxdb_format(payload):
@@ -21,6 +20,8 @@ class InfluxDBConverter:
             # Extract sensor fields with defaults if missing
             temperature = float(sensor_data.get("temperature", 0))
             humidity = float(sensor_data.get("humidity", 0))
+
+            gateway_id = payload.get("gatewayId", "unknown")
 
             # Convert additional fields with proper type conversion
             rssi = payload.get("rssi")
@@ -59,6 +60,7 @@ class InfluxDBConverter:
                 .tag("device_eui", payload.get("device_eui", "unknown"))
                 .tag("device_name", payload.get("device_name", "unknown"))
                 .tag("region", payload.get("region", "unknown"))
+                .tag("gatewayId", gateway_id)
                 .field("temperature", temperature)
                 .field("humidity", humidity)
             )

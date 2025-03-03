@@ -5,7 +5,7 @@ logger.setLevel(logging.INFO)
 
 def extract_battery_info(uplink_message):
     """
-    Extracts battery-related information from the uplink message.
+    Extracts battery-related information from the status message.
     Looks for keys such as 'batteryLevel', 'margin', 'externalPowerSource', and 'batteryLevelUnavailable'.
     Returns a dictionary with battery info if present, otherwise None.
     """

@@ -16,7 +16,7 @@ def extract_relevant_data(uplink_message):
       and sensor-specific fields (rssi, snr, frequency, channel) are also included.
     - If no sensor data is available but battery info exists, only battery-related data is added
       under "battery_data" (omitting sensor-specific fields).
-    - Returns None if neither is available.
+    - Returns None if neither is available
     """
     try:
         logger.info("🔍 Extracting common fields from uplink message.")

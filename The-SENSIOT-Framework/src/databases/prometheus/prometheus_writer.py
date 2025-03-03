@@ -63,7 +63,7 @@ class PrometheusWriter(threading.Thread):
             device_id = payload.get("device_eui", "unknown")
             region = payload.get("region", "unknown")
 
-            # Extract sensor data (from sensor_data or decodedPayload if you prefer)
+            # Extract sensor data (from sensor_data or decodedPayload)
             sensor_info = {}
             if "decodedPayload" in payload:
                 sensor_info = self._parse_decoded_payload(payload["decodedPayload"])
