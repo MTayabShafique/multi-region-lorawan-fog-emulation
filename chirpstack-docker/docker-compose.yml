@@ -27,11 +27,12 @@ services:
     restart: always
     networks:
       - lorawan
+    hostname: emqx@emqx1.chirpstack-docker_lorawan
     environment:
-      - EMQX_NODE_NAME=emqx@emqx1
+      - EMQX_NODE_NAME=emqx@emqx1.chirpstack-docker_lorawan
       - EMQX_CLUSTER__DISCOVERY_STRATEGY=static
       - EMQX_NODE__COOKIE=secretcookie
-      - EMQX_CLUSTER__STATIC__SEEDS=emqx@emqx1,emqx@emqx2,emqx@emqx3
+      - EMQX_CLUSTER__STATIC__SEEDS=emqx@emqx1.chirpstack-docker_lorawan,emqx@emqx2.chirpstack-docker_lorawan,emqx@emqx3.chirpstack-docker_lorawan
     ports:
       - "18083:18083"
     healthcheck:
@@ -46,11 +47,12 @@ services:
     restart: always
     networks:
       - lorawan
+    hostname: emqx@emqx2.chirpstack-docker_lorawan
     environment:
-      - EMQX_NODE_NAME=emqx@emqx2
+      - EMQX_NODE_NAME=emqx@emqx2.chirpstack-docker_lorawan
       - EMQX_CLUSTER__DISCOVERY_STRATEGY=static
       - EMQX_NODE__COOKIE=secretcookie
-      - EMQX_CLUSTER__STATIC__SEEDS=emqx@emqx1,emqx@emqx2,emqx@emqx3
+      - EMQX_CLUSTER__STATIC__SEEDS=emqx@emqx1.chirpstack-docker_lorawan,emqx@emqx2.chirpstack-docker_lorawan,emqx@emqx3.chirpstack-docker_lorawan
     healthcheck:
       test: ["CMD", "nc", "-z", "localhost", "1883"]
       interval: 10s
@@ -62,11 +64,12 @@ services:
     restart: always
     networks:
       - lorawan
+    hostname: emqx@emqx3.chirpstack-docker_lorawan
     environment:
-      - EMQX_NODE_NAME=emqx@emqx3
+      - EMQX_NODE_NAME=emqx@emqx3.chirpstack-docker_lorawan
       - EMQX_CLUSTER__DISCOVERY_STRATEGY=static
       - EMQX_NODE__COOKIE=secretcookie
-      - EMQX_CLUSTER__STATIC__SEEDS=emqx@emqx1,emqx@emqx2,emqx@emqx3
+      - EMQX_CLUSTER__STATIC__SEEDS=emqx@emqx1.chirpstack-docker_lorawan,emqx@emqx2.chirpstack-docker_lorawan,emqx@emqx3.chirpstack-docker_lorawan
     healthcheck:
       test: [ "CMD", "nc", "-z", "localhost", "1883" ]
       interval: 10s
@@ -93,6 +96,8 @@ services:
       - POSTGRESQL_HOST=postgres
     ports:
       - "8080:8080"
+    expose:
+      - "9108"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s

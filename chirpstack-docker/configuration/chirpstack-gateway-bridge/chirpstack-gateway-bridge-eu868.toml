@@ -13,3 +13,10 @@ event_topic_template = "eu868/gateway/{{ .GatewayID }}/event/{{ .EventType }}"
 state_topic_template = "eu868/gateway/{{ .GatewayID }}/state/{{ .StateType }}"
 command_topic_template = "eu868/gateway/{{ .GatewayID }}/command/#"
 json = true
+
+[metrics.prometheus]
+# Enable Prometheus metrics endpoint
+endpoint_enabled=true
+
+# Define the port for metrics
+bind="0.0.0.0:9109"
