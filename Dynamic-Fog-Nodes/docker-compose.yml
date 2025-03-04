@@ -1,41 +1,104 @@
 version: "3.8"
 
 services:
-  mqtt:
-    image: eclipse-mosquitto
-    ports:
-      - "1888:1883"  # Expose MQTT on internal port 1883
+  # HAProxy Load Balancer for EMQX
+  haproxy:
+    image: haproxy:2.6
+    container_name: haproxy_fog
     volumes:
-      - ./config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./config/haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    ports:
+      - "1888:1883"
+    depends_on:
+      - emqx1
+      - emqx2
     networks:
       - fog-sensiot_network
     restart: always
+    healthcheck:
+      test: [ "CMD", "sh", "-c", "nc -zv emqx_fog1 1883 && nc -zv emqx_fog2 1883" ]
+      interval: 5s
+      timeout: 10s
+      retries: 5
 
+
+  # EMQX Cluster - Node 1
+  emqx1:
+    image: emqx/emqx:5.8.5
+    container_name: emqx_fog1
+    hostname: emqx_fog1.fog-sensiot_network  # 🛠 Fix: Fully Qualified Name
+    environment:
+        - EMQX_NODE_NAME=emqx@emqx_fog1.fog-sensiot_network  # 🛠 Fix: Use FQDN
+        - EMQX_NODE__COOKIE=secretcookie
+        - EMQX_CLUSTER__DISCOVERY_STRATEGY=static
+        - EMQX_CLUSTER__STATIC__SEEDS=emqx@emqx_fog1.fog-sensiot_network,emqx@emqx_fog2.fog-sensiot_network
+    volumes:
+      - emqx_data_1:/opt/emqx/data
+    ports:
+      - "2883:1883"
+      - "18084:18083"  # For dashboard access if needed
+    networks:
+      - fog-sensiot_network
+    restart: always
+    healthcheck:
+      test: ["CMD", "sh", "-c", "nc -z localhost 1883"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # EMQX Cluster - Node 2
+  emqx2:
+    image: emqx/emqx:5.8.5
+    container_name: emqx_fog2
+    hostname: emqx_fog2.fog-sensiot_network
+    environment:
+        - EMQX_NODE_NAME=emqx@emqx_fog2.fog-sensiot_network
+        - EMQX_NODE__COOKIE=secretcookie
+        - EMQX_CLUSTER__DISCOVERY_STRATEGY=static
+        - EMQX_CLUSTER__STATIC__SEEDS=emqx@emqx_fog1.fog-sensiot_network,emqx@emqx_fog2.fog-sensiot_network
+    volumes:
+      - emqx_data_2:/opt/emqx/data
+    ports:
+      - "2884:1883"
+    networks:
+      - fog-sensiot_network
+    restart: always
+    healthcheck:
+      test: ["CMD", "sh", "-c", "nc -z localhost 1883"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Fog Manager (Active-Standby)
   fog_manager:
     build: ./fog-manager
     environment:
       - DOCKER_HOST=unix:///var/run/docker.sock
-      - MQTT_BROKER=mqtt  # Fog Manager uses "mqtt" as hostname
+      - MQTT_BROKER_GLOBAL=haproxy
+      - MQTT_BROKER_LOCAL=haproxy_fog
       - MQTT_PORT=1883
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./config:/app/config
+      - ./configuration/fog_manager:/app/config
     user: "1000:984"
     depends_on:
-      - mqtt
+      - haproxy
     networks:
+      - chirpstack-docker_lorawan
       - fog-sensiot_network
-      - eu868_eu868_network
-      - us915_0_us915_network
     dns:
       - 8.8.8.8
       - 8.8.4.4
     restart: unless-stopped
 
+volumes:
+  emqx_data_1:
+  emqx_data_2:
+
 networks:
   fog-sensiot_network:
     external: true
-  eu868_eu868_network:
-    external: true
-  us915_0_us915_network:
+  chirpstack-docker_lorawan:
     external: true

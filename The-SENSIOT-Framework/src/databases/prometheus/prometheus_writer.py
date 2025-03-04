@@ -63,14 +63,13 @@ class PrometheusWriter(threading.Thread):
             device_id = payload.get("device_eui", "unknown")
             region = payload.get("region", "unknown")
 
-            # Extract sensor data (from sensor_data or decodedPayload if you prefer)
+            # Extract sensor data (from sensor_data or decodedPayload)
             sensor_info = {}
             if "decodedPayload" in payload:
                 sensor_info = self._parse_decoded_payload(payload["decodedPayload"])
             else:
                 sensor_info = payload.get("sensor_data", {})
 
-            # Extract battery data if present
             battery_data = payload.get("battery_data", {})
 
             # Update sensor metrics if sensor data is found
@@ -114,7 +113,7 @@ class PrometheusWriter(threading.Thread):
             logger.debug(f"No humidity in sensor_info: {sensor_info}")
 
         # If the payload includes RSSI and SNR in the top-level or sensor_info, handle them here
-        rssi = sensor_info.get("rssi") or sensor_info.get("RSSI")  # or use top-level if needed
+        rssi = sensor_info.get("rssi") or sensor_info.get("RSSI")
         snr = sensor_info.get("snr") or sensor_info.get("SNR")
         # If your code stores them at top-level, do:
         # rssi = payload.get("rssi")

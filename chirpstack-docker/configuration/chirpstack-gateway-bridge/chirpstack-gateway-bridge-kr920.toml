@@ -1,0 +1,21 @@
+
+# MQTT client configuration for gateway bridge
+[integration.mqtt.auth.generic]
+# Use the HAProxy service name (as defined in docker-compose) as the broker host
+servers = ["tcp://haproxy:1883"]
+username = ""
+password = ""
+
+[integration.mqtt]
+# Set topic templates using a region-specific prefix
+event_topic_template = "kr920/gateway/{{ .GatewayID }}/event/{{ .EventType }}"
+state_topic_template = "kr920/gateway/{{ .GatewayID }}/state/{{ .StateType }}"
+command_topic_template = "kr920/gateway/{{ .GatewayID }}/command/#"
+json = true
+
+[metrics.prometheus]
+# Enable Prometheus metrics endpoint
+endpoint_enabled=true
+
+# Define the port for metrics
+bind="0.0.0.0:9111"

@@ -1,10 +1,11 @@
-import json
+import os
 
 class BrokerDiscovery:
-    def __init__(self, config_path):
+    def __init__(self, config_path=None):
         self.config_path = config_path
 
     def get_brokers(self):
-        with open(self.config_path, 'r') as f:
-            data = json.load(f)
-        return data.get("brokers", [])
+        return [{
+            "address": os.getenv("MQTT_BROKER", "haproxy"),
+            "port": int(os.getenv("MQTT_PORT", 1883))
+        }]

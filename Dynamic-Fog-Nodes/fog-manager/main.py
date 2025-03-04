@@ -1,55 +1,34 @@
 import time
 import os
 import logging
-import importlib
-
-from src.broker_discovery import BrokerDiscovery
-from src.mqtt_manager import MQTTManager
 from src.fog_container_manager import FogContainerManager
 from src.fog_mqtt_router import FogMQTTRouter
+from src.mqtt_manager import MQTTManager
+from src import globals as g
 
-# Set up logging (if not already configured)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def main():
     logger.info("🚀 Fog Manager initializing...")
 
-    # Read environment variables for MQTT (if needed)
-    mqtt_broker = os.getenv("MQTT_BROKER", "mqtt")
-    mqtt_port = int(os.getenv("MQTT_PORT", 1883))
-
-    # Initialize the MQTT Router (Handles message publishing)
+    # Initialize the MQTT Router for publishing to fog nodes.
     mqtt_publisher = FogMQTTRouter()
 
-    # Instantiate Fog Container Manager (Manages dynamic fog nodes)
+    # Instantiate the Fog Container Manager (creates & routes messages to fog node containers)
     container_manager = FogContainerManager(
         image_name="myorg/fog-node:latest",
         mqtt_publisher=mqtt_publisher
     )
 
-    from src import globals as g
+    # Save the container manager instance in globals so it can be accessed from message_processor.
     g.fog_manager = container_manager
 
-    # Inject the fog_container_manager instance into the message processor.
-    # (This avoids the need for a global import inside message_processor.py.)
-    #message_processor = importlib.import_module("src.message_processor")
-    #message_processor.fog_manager = container_manager
-
-    # Instantiate Broker Discovery and MQTT Manager for receiving uplink messages
-    discovery = BrokerDiscovery(config_path='/app/config/brokers.json')
-    mqtt_mgr = MQTTManager(discovery)
-
-    logger.info("✅ Fog Manager started.")
-
-    # Start MQTT Manager for handling uplink messages from brokers
+    # Create a single MQTTManager that connects to the global broker and subscribes to uplink messages.
+    mqtt_mgr = MQTTManager()
     mqtt_mgr.start()
 
-    # 🔹 Test message routing to verify MQTT connectivity
-    #test_message = '{"data": "Hello from Fog Manager!"}'
-    #region = "us915_0"  # You can change this dynamically based on test cases
-   # logger.info(f"📤 Sending test message to region {region}...")
-   # mqtt_publisher.route_message(region, test_message)
+    logger.info("✅ Fog Manager started.")
 
     try:
         while True:

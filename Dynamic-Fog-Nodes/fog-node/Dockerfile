@@ -3,6 +3,9 @@ FROM python:3.9-slim
 
 WORKDIR /app
 
+# Install ping (iputils-ping) along with your dependencies
+RUN apt-get update && apt-get install -y iputils-ping
+
 # Copy the fog node application file and the entire data_processors directory
 COPY fog_node_mqtt.py .
 COPY data_processors/ ./data_processors/
