@@ -64,21 +64,11 @@
   # Multiple regions can be enabled simultaneously. Each region must match
   # the 'name' parameter of the region configuration in '[[regions]]'.
   enabled_regions=[
-    "as923",
-    "as923_2",
-    "as923_3",
-    "as923_4",
-    "au915_0",
-    "cn470_10",
-    "cn779",
-    "eu433",
     "eu868",
     "in865",
-    "ism2400",
     "kr920",
     "ru864",
-    "us915_0",
-    "us915_1",
+    "us915_0"
   ]
 
 
@@ -96,13 +86,13 @@
   #   openssl rand -base64 32
   secret="you-must-replace-this"
 
-
 [integration]
   enabled=["mqtt"]
 
   [integration.mqtt]
     server="tcp://haproxy:1883/"
     json=true
+
 
 # EMQX specific optimizations
 [network_server.gateway.backend.mqtt]
@@ -111,3 +101,7 @@ qos = 0
 clean_session = true
 keep_alive_interval = "60s"
 max_reconnect_interval = "5m"
+
+# Prometheus Metrics Configuration
+[monitoring]
+bind = "0.0.0.0:9108"

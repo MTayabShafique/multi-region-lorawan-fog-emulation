@@ -1,0 +1,16 @@
+version: '3.7'
+
+networks:
+  chirpstack-docker_lorawan:
+    external: true  # Attach Prometheus to ChirpStack network
+
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus_monitor
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9091:9090"
+    networks:
+      - chirpstack-docker_lorawan
