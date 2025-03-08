@@ -96,8 +96,6 @@ services:
       - POSTGRESQL_HOST=postgres
     ports:
       - "8080:8080"
-    expose:
-      - "9108"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
@@ -132,22 +130,6 @@ services:
       - ./configuration/chirpstack-gateway-bridge/chirpstack-gateway-bridge-us915_0.toml:/etc/chirpstack-gateway-bridge/chirpstack-gateway-bridge.toml
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # Gateway Bridge KR920
-  chirpstack-gateway-bridge-kr920:
-    image: chirpstack/chirpstack-gateway-bridge:4
-    restart: always
-    networks:
-      - lorawan
-    ports:
-      - "1702:1700/udp"
-    volumes:
-      - ./configuration/chirpstack-gateway-bridge/chirpstack-gateway-bridge-kr920.toml:/etc/chirpstack-gateway-bridge/chirpstack-gateway-bridge.toml
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
