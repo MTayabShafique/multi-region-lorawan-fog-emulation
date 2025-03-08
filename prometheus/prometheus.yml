@@ -1,11 +1,14 @@
 global:
   scrape_interval: 15s
+  evaluation_interval: 15s
 
 scrape_configs:
+  # --- ChirpStack Core ---
   - job_name: 'chirpstack_core'
     static_configs:
-      - targets: ['chirpstack-docker_chirpstack_1:9108']
+      - targets: ['chirpstack-docker_chirpstack_1:9108']  # Adjust name:port as needed
 
+  # --- Gateway Bridges ---
   - job_name: 'chirpstack_gateway_bridge_eu868'
     static_configs:
       - targets: ['chirpstack-docker_chirpstack-gateway-bridge-eu868_1:9109']
@@ -25,3 +28,40 @@ scrape_configs:
   - job_name: 'chirpstack_gateway_bridge_ru864'
     static_configs:
       - targets: ['chirpstack-docker_chirpstack-gateway-bridge-ru864_1:9112']
+
+  # --- cAdvisor (Container-Level Metrics) ---
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']  # cAdvisor container name:port
+
+  # --- Node Exporter (System-Level Metrics) ---
+  - job_name: 'node_exporter'
+    static_configs:
+      - targets: ['node_exporter:9100']  # Node Exporter container name:port
+
+  # --- EMQX Node 1 ---
+  - job_name: 'emqx1_stats'
+    static_configs:
+      - targets: ['chirpstack-docker_emqx1_1:18083']  # Container name:port
+    metrics_path: '/api/v5/prometheus/stats'
+    scheme: 'http'
+
+  # --- EMQX Node 2 ---
+  - job_name: 'emqx2_stats'
+    static_configs:
+      - targets: ['chirpstack-docker_emqx2_1:18083']
+    metrics_path: '/api/v5/prometheus/stats'
+    scheme: 'http'
+
+  # --- EMQX Node 3 ---
+  - job_name: 'emqx3_stats'
+    static_configs:
+      - targets: ['chirpstack-docker_emqx3_1:18083']
+    metrics_path: '/api/v5/prometheus/stats'
+    scheme: 'http'
+
+  - job_name: 'emqx_stats_aggregated'
+    static_configs:
+      - targets: ['chirpstack-docker_emqx1_1:18083']
+    metrics_path: '/api/v5/prometheus/stats?mode=all_nodes_aggregated'
+    scheme: 'http'
