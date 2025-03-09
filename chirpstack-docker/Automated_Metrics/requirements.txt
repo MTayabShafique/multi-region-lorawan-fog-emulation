@@ -1,3 +1,4 @@
 paho-mqtt
-influxdb
+influxdb-client
 python-dateutil
+pytz
