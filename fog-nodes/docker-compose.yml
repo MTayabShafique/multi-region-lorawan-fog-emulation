@@ -1,0 +1,26 @@
+version: '3.7'
+
+services:
+  fog-node-us915:
+    build: .
+    restart: always
+    env_file:
+      - ./config/config-us915.env
+    networks:
+      - fog_network
+      - chirpstack-docker_lorawan
+
+  fog-node-eu868:
+    build: .
+    restart: always
+    env_file:
+      - ./config/config-eu868.env
+    networks:
+      - fog_network
+      - chirpstack-docker_lorawan
+
+networks:
+  fog_network:
+    driver: bridge
+  chirpstack-docker_lorawan:
+    external: true
