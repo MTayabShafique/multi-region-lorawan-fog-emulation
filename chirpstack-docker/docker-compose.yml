@@ -8,6 +8,10 @@ volumes:
   postgresqldata:
   redisdata:
   influxdb_data:
+  emqx1_data:
+  emqx2_data:
+  emqx3_data:
+
 
 services:
   #############################################################################
@@ -37,11 +41,15 @@ services:
     networks:
       - lorawan
     hostname: emqx@emqx1.chirpstack-docker_lorawan
+    volumes:
+      - emqx1_data:/opt/emqx/data
     environment:
       - EMQX_NODE_NAME=emqx@emqx1.chirpstack-docker_lorawan
       - EMQX_CLUSTER__DISCOVERY_STRATEGY=static
       - EMQX_NODE__COOKIE=secretcookie
       - EMQX_CLUSTER__STATIC__SEEDS=emqx@emqx1.chirpstack-docker_lorawan,emqx@emqx2.chirpstack-docker_lorawan,emqx@emqx3.chirpstack-docker_lorawan
+    ports:
+      - "18083:18083"
     healthcheck:
       test: ["CMD", "nc", "-z", "localhost", "1883"]
       interval: 10s
@@ -54,6 +62,8 @@ services:
     networks:
       - lorawan
     hostname: emqx@emqx2.chirpstack-docker_lorawan
+    volumes:
+      - emqx2_data:/opt/emqx/data
     environment:
       - EMQX_NODE_NAME=emqx@emqx2.chirpstack-docker_lorawan
       - EMQX_CLUSTER__DISCOVERY_STRATEGY=static
@@ -71,6 +81,8 @@ services:
     networks:
       - lorawan
     hostname: emqx@emqx3.chirpstack-docker_lorawan
+    volumes:
+      - emqx3_data:/opt/emqx/data
     environment:
       - EMQX_NODE_NAME=emqx@emqx3.chirpstack-docker_lorawan
       - EMQX_CLUSTER__DISCOVERY_STRATEGY=static

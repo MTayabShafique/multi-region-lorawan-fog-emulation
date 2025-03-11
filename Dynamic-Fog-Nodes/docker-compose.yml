@@ -36,7 +36,7 @@ services:
       - emqx_data_1:/opt/emqx/data
     ports:
       - "2883:1883"
-      - "18084:18083"  # For dashboard access if needed
+      - "18084:18083"
     networks:
       - fog-sensiot_network
     restart: always
