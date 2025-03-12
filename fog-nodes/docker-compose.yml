@@ -1,6 +1,14 @@
 version: '3.7'
 
+volumes:
+  fog_emqx1_data:
+  fog_emqx2_data:
+  fog_emqx3_data:
+
 services:
+  #############################################################################
+  #                             Region US915                                  #
+  #############################################################################
   fog-node-us915:
     build: .
     restart: always
@@ -10,6 +18,9 @@ services:
       - fog_network
       - chirpstack-docker_lorawan
 
+  #############################################################################
+  #                             Region EU868                                  #
+  #############################################################################
   fog-node-eu868:
     build: .
     restart: always
@@ -18,6 +29,114 @@ services:
     networks:
       - fog_network
       - chirpstack-docker_lorawan
+
+  #############################################################################
+  #                             Region RU864                                  #
+  #############################################################################
+  fog-node-ru864:
+    build: .
+    restart: always
+    env_file:
+      - ./config/config-ru864.env
+    networks:
+      - fog_network
+      - chirpstack-docker_lorawan
+
+  #############################################################################
+  #                             Region IN865                                  #
+  #############################################################################
+  fog-node-in865:
+    build: .
+    restart: always
+    env_file:
+      - ./config/config-in865.env
+    networks:
+      - fog_network
+      - chirpstack-docker_lorawan
+
+  #############################################################################
+  #                           Load Balancer (HAProxy)                         #
+  #############################################################################
+  haproxy:
+      image: haproxy:2.6
+      restart: always
+      networks:
+        - fog_network
+      volumes:
+        - ./config/haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+      ports:
+        - "2883:1883"  # Expose central broker on host port 2883
+      healthcheck:
+        test: [ "CMD", "nc", "-z", "localhost", "1883" ]
+        interval: 10s
+        timeout: 5s
+        retries: 3
+
+  #############################################################################
+  #                           EMQX MQTT CLUSTER (3 Nodes)                     #
+  #############################################################################
+  emqx1:
+      image: emqx:5.0
+      restart: always
+      networks:
+        - fog_network
+      hostname: emqx@fog-emqx1.fog_network
+      volumes:
+        - fog_emqx1_data:/opt/emqx/data
+      environment:
+        - EMQX_NODE_NAME=emqx@fog-emqx1.fog_network
+        - EMQX_CLUSTER__DISCOVERY_STRATEGY=static
+        - EMQX_NODE__COOKIE=secretcookie
+        - EMQX_CLUSTER__STATIC__SEEDS=emqx@fog-emqx1.fog_network,emqx@fog-emqx2.fog_network,emqx@fog-emqx3.fog_network
+        - EMQX_ALLOW_ANONYMOUS=true
+        - EMQX_ALLOW_WILDCARD_SUBSCRIPTION=true
+      healthcheck:
+        test: [ "CMD", "nc", "-z", "localhost", "1883" ]
+        interval: 10s
+        timeout: 5s
+        retries: 5
+
+  emqx2:
+      image: emqx:5.0
+      restart: always
+      networks:
+        - fog_network
+      hostname: emqx@fog-emqx2.fog_network
+      volumes:
+        - fog_emqx2_data:/opt/emqx/data
+      environment:
+        - EMQX_NODE_NAME=emqx@fog-emqx2.fog_network
+        - EMQX_CLUSTER__DISCOVERY_STRATEGY=static
+        - EMQX_NODE__COOKIE=secretcookie
+        - EMQX_CLUSTER__STATIC__SEEDS=emqx@fog-emqx1.fog_network,emqx@fog-emqx2.fog_network,emqx@fog-emqx3.fog_network
+        - EMQX_ALLOW_ANONYMOUS=true
+        - EMQX_ALLOW_WILDCARD_SUBSCRIPTION=true
+      healthcheck:
+        test: [ "CMD", "nc", "-z", "localhost", "1883" ]
+        interval: 10s
+        timeout: 5s
+        retries: 5
+
+  emqx3:
+      image: emqx:5.0
+      restart: always
+      networks:
+        - fog_network
+      hostname: emqx@fog-emqx3.fog_network
+      volumes:
+        - fog_emqx3_data:/opt/emqx/data
+      environment:
+        - EMQX_NODE_NAME=emqx@fog-emqx3.fog_network
+        - EMQX_CLUSTER__DISCOVERY_STRATEGY=static
+        - EMQX_NODE__COOKIE=secretcookie
+        - EMQX_CLUSTER__STATIC__SEEDS=emqx@fog-emqx1.fog_network,emqx@fog-emqx2.fog_network,emqx@fog-emqx3.fog_network
+        - EMQX_ALLOW_ANONYMOUS=true
+        - EMQX_ALLOW_WILDCARD_SUBSCRIPTION=true
+      healthcheck:
+        test: [ "CMD", "nc", "-z", "localhost", "1883" ]
+        interval: 10s
+        timeout: 5s
+        retries: 5
 
 networks:
   fog_network:
