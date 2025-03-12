@@ -48,6 +48,8 @@ services:
       - EMQX_CLUSTER__DISCOVERY_STRATEGY=static
       - EMQX_NODE__COOKIE=secretcookie
       - EMQX_CLUSTER__STATIC__SEEDS=emqx@emqx1.chirpstack-docker_lorawan,emqx@emqx2.chirpstack-docker_lorawan,emqx@emqx3.chirpstack-docker_lorawan
+      - EMQX_ALLOW_ANONYMOUS=true
+      - EMQX_ALLOW_WILDCARD_SUBSCRIPTION=true
     ports:
       - "18083:18083"
     healthcheck:
@@ -69,6 +71,8 @@ services:
       - EMQX_CLUSTER__DISCOVERY_STRATEGY=static
       - EMQX_NODE__COOKIE=secretcookie
       - EMQX_CLUSTER__STATIC__SEEDS=emqx@emqx1.chirpstack-docker_lorawan,emqx@emqx2.chirpstack-docker_lorawan,emqx@emqx3.chirpstack-docker_lorawan
+      - EMQX_ALLOW_ANONYMOUS=true
+      - EMQX_ALLOW_WILDCARD_SUBSCRIPTION=true
     healthcheck:
       test: ["CMD", "nc", "-z", "localhost", "1883"]
       interval: 10s
@@ -88,6 +92,8 @@ services:
       - EMQX_CLUSTER__DISCOVERY_STRATEGY=static
       - EMQX_NODE__COOKIE=secretcookie
       - EMQX_CLUSTER__STATIC__SEEDS=emqx@emqx1.chirpstack-docker_lorawan,emqx@emqx2.chirpstack-docker_lorawan,emqx@emqx3.chirpstack-docker_lorawan
+      - EMQX_ALLOW_ANONYMOUS=true
+      - EMQX_ALLOW_WILDCARD_SUBSCRIPTION=true
     healthcheck:
       test: [ "CMD", "nc", "-z", "localhost", "1883" ]
       interval: 10s
