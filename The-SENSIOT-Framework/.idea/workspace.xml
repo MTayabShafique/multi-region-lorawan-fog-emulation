@@ -7,7 +7,34 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="edd25f0f-2fbd-4370-a3b0-10ad51789c2a" name="Changes" comment="" />
+    <list default="true" id="edd25f0f-2fbd-4370-a3b0-10ad51789c2a" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../Visualization/.idea/Visualization.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Visualization/grafana-provisioning/dashboards/Fog_Nodes_Monitoring.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Visualization/grafana-provisioning/provisioning/config/grafana.ini" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Visualization/grafana-provisioning/provisioning/dashboards/dashboards.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Visualization/grafana-provisioning/provisioning/datasources/datasource.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Visualization/grafana-provisioning/provisioning/datasources/influxdb.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../chirpstack-docker/Automated_Metrics/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/../chirpstack-docker/automated_metrics/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../chirpstack-docker/Automated_Metrics/airtime_calculator.py" beforeDir="false" afterPath="$PROJECT_DIR$/../chirpstack-docker/automated_metrics/airtime_calculator.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../chirpstack-docker/Automated_Metrics/energy_calculator.py" beforeDir="false" afterPath="$PROJECT_DIR$/../chirpstack-docker/automated_metrics/energy_calculator.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../chirpstack-docker/Automated_Metrics/influx_writer.py" beforeDir="false" afterPath="$PROJECT_DIR$/../chirpstack-docker/automated_metrics/influx_writer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../chirpstack-docker/Automated_Metrics/latency_calculator.py" beforeDir="false" afterPath="$PROJECT_DIR$/../chirpstack-docker/automated_metrics/latency_calculator.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../chirpstack-docker/Automated_Metrics/mqtt_subscriber.py" beforeDir="false" afterPath="$PROJECT_DIR$/../chirpstack-docker/automated_metrics/mqtt_subscriber.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../chirpstack-docker/Automated_Metrics/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../chirpstack-docker/automated_metrics/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../chirpstack-docker/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/../chirpstack-docker/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../fog-nodes/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/../fog-nodes/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../fog-nodes/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../fog-nodes/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prometheus/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prometheus/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prometheus/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prometheus/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prometheus/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prometheus/.idea/prometheus.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prometheus/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prometheus/docker-compose.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../prometheus/prometheus.yml" beforeDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -56,8 +83,9 @@
     "Python.web.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "feature-15/Prometheus-monitoring-chirpstack",
-    "last_opened_file_path": "/home/tayyab/Thesis/code/The-SENSIOT-Framework",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "git-widget-placeholder": "feature-18/newFogsetup",
+    "last_opened_file_path": "/home/tayyab/Thesis/code/Visualization",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -218,6 +246,7 @@
       <workItem from="1741011648632" duration="1946000" />
       <workItem from="1741019711327" duration="3513000" />
       <workItem from="1741077312394" duration="5841000" />
+      <workItem from="1741797700978" duration="4112000" />
     </task>
     <servers />
   </component>

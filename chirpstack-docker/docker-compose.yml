@@ -274,7 +274,7 @@ services:
   #   Automated Metrics Container (Python scripts + Dockerfile in subfolder)  #
   #############################################################################
   automated-metrics:
-    build: ./Automated_Metrics  # <--- Adjust path if needed
+    build: automated_metrics
     container_name: automated_metrics_container
     restart: always
     depends_on:

@@ -21,7 +21,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "fef9j31awxxj4f"
+        "uid": "P951FEA4DE68E13C5"
       },
       "fieldConfig": {
         "defaults": {
@@ -117,7 +117,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "fef9j31awxxj4f"
+        "uid": "P951FEA4DE68E13C5"
       },
       "fieldConfig": {
         "defaults": {
@@ -210,7 +210,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "fef9j31awxxj4f"
+        "uid": "P951FEA4DE68E13C5"
       },
       "fieldConfig": {
         "defaults": {
@@ -303,7 +303,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "fef9j31awxxj4f"
+        "uid": "P951FEA4DE68E13C5"
       },
       "fieldConfig": {
         "defaults": {
@@ -401,7 +401,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "fef9j31awxxj4f"
+        "uid": "P951FEA4DE68E13C5"
       },
       "fieldConfig": {
         "defaults": {
@@ -492,7 +492,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "fef9j31awxxj4f"
+        "uid": "P951FEA4DE68E13C5"
       },
       "fieldConfig": {
         "defaults": {
@@ -571,7 +571,7 @@
         },
         "datasource": {
           "type": "influxdb",
-          "uid": "fef9j31awxxj4f"
+          "uid": "P951FEA4DE68E13C5"
         },
         "definition": "import \"influxdata/influxdb/schema\"\n  schema.tagValues(bucket: \"lorawan_bucket\", tag: \"region\")",
         "includeAll": true,
@@ -594,7 +594,7 @@
         },
         "datasource": {
           "type": "influxdb",
-          "uid": "fef9j31awxxj4f"
+          "uid": "P951FEA4DE68E13C5"
         },
         "definition": "import \"influxdata/influxdb/schema\"\n  schema.tagValues(bucket: \"lorawan_bucket\", tag: \"device\", predicate: (r) => r.region =~ /^${region:regex}$/)",
         "includeAll": true,

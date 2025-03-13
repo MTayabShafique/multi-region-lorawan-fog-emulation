@@ -17,10 +17,6 @@ scrape_configs:
     static_configs:
       - targets: ['chirpstack-docker_chirpstack-gateway-bridge-us915_1:9113']
 
-  - job_name: 'chirpstack_gateway_bridge_kr920'
-    static_configs:
-      - targets: ['chirpstack-docker_chirpstack-gateway-bridge-kr920_1:9111']
-
   - job_name: 'chirpstack_gateway_bridge_in865'
     static_configs:
       - targets: ['chirpstack-docker_chirpstack-gateway-bridge-in865_1:9110']
@@ -65,3 +61,11 @@ scrape_configs:
       - targets: ['chirpstack-docker_emqx1_1:18083']
     metrics_path: '/api/v5/prometheus/stats?mode=all_nodes_aggregated'
     scheme: 'http'
+
+  - job_name: 'fog_nodes'
+    static_configs:
+      - targets:
+          - 'fog-nodes_fog-node-us915_1:8000'
+          - 'fog-nodes_fog-node-eu868_1:8000'
+          - 'fog-nodes_fog-node-ru864_1:8000'
+          - 'fog-nodes_fog-node-in865_1:8000'
