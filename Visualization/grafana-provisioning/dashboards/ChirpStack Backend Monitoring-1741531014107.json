@@ -5,7 +5,7 @@
         "builtIn": 1,
         "datasource": {
           "type": "prometheus",
-          "uid": "${DS_PROMETHEUS}"
+          "uid": "PBFA97CFB590B2093"
         },
         "enable": true,
         "hide": true,
@@ -30,7 +30,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "PBFA97CFB590B2093"
       },
       "fieldConfig": {
         "defaults": {
@@ -94,7 +94,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "PBFA97CFB590B2093"
       },
       "fieldConfig": {
         "defaults": {
@@ -186,7 +186,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "PBFA97CFB590B2093"
       },
       "fieldConfig": {
         "defaults": {
@@ -249,7 +249,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "PBFA97CFB590B2093"
       },
       "fieldConfig": {
         "defaults": {
@@ -312,7 +312,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "PBFA97CFB590B2093"
       },
       "fieldConfig": {
         "defaults": {
@@ -376,7 +376,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "PBFA97CFB590B2093"
       },
       "fieldConfig": {
         "defaults": {
@@ -476,7 +476,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "fef3i71ssv9xcd"
+        "uid": "PBFA97CFB590B2093"
       },
       "fieldConfig": {
         "defaults": {
@@ -573,7 +573,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "PBFA97CFB590B2093"
       },
       "fieldConfig": {
         "defaults": {
@@ -680,7 +680,7 @@
       {
         "current": {
           "text": "prometheus",
-          "value": "fef3i71ssv9xcd"
+          "value": "PBFA97CFB590B2093"
         },
         "name": "DS_PROMETHEUS",
         "options": [],
@@ -696,7 +696,7 @@
         },
         "datasource": {
           "type": "prometheus",
-          "uid": "${DS_PROMETHEUS}"
+          "uid": "PBFA97CFB590B2093"
         },
         "definition": "label_values(backend_semtechudp_gateway_connect_count, gateway_id)",
         "includeAll": true,
@@ -717,7 +717,7 @@
         },
         "datasource": {
           "type": "prometheus",
-          "uid": "${DS_PROMETHEUS}"
+          "uid": "PBFA97CFB590B2093"
         },
         "definition": "label_values(backend_semtechudp_udp_sent_count, packet_type)",
         "includeAll": true,

@@ -2,19 +2,17 @@ version: '3.7'
 
 networks:
   chirpstack-docker_lorawan:
-    external: true  # Attach Prometheus to ChirpStack network
-
+    external: true
 services:
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus_monitor
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9091:9090"
     networks:
       - chirpstack-docker_lorawan
-
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
     container_name: cadvisor
@@ -26,7 +24,6 @@ services:
       - /var/lib/docker:/var/lib/docker:ro
     networks:
       - chirpstack-docker_lorawan
-
   node-exporter:
     image: prom/node-exporter:latest
     container_name: node_exporter
@@ -34,12 +31,16 @@ services:
       - "9100:9100"
     networks:
       - chirpstack-docker_lorawan
-
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
     ports:
       - "3005:3000"
+    volumes:
+      - ./grafana-provisioning/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana-provisioning/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana-provisioning/provisioning/config:/etc/grafana/provisioning/config
+      - ./grafana-provisioning/dashboards:/var/lib/grafana/dashboards
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     networks:

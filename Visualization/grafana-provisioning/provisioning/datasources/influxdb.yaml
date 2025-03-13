@@ -1,0 +1,14 @@
+apiVersion: 1
+datasources:
+  - name: InfluxDB
+    type: influxdb
+    access: proxy
+    url: http://influxdb:8087
+    jsonData:
+      version: Flux
+      organization: "lorawan_org"
+      defaultBucket: "lorawan_bucket"
+      tlsSkipVerify: true
+      httpMode: POST
+    secureJsonData:
+      token: "Di7npyTp8jcmLkQl_CingHPy41y_UJjtYDe4XN1UCoFmBovy4xwhtjGa-Bt_Ng7G8x24HIsNxwH7Rv9owX1-jw=="
