@@ -62,6 +62,7 @@ services:
       restart: always
       networks:
         - fog_network
+        - chirpstack-docker_lorawan
       volumes:
         - ./config/haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
       ports:
@@ -80,9 +81,12 @@ services:
       restart: always
       networks:
         - fog_network
+        - chirpstack-docker_lorawan
       hostname: emqx@fog-emqx1.fog_network
       volumes:
         - fog_emqx1_data:/opt/emqx/data
+      ports:
+        - "18084:18083"
       environment:
         - EMQX_NODE_NAME=emqx@fog-emqx1.fog_network
         - EMQX_CLUSTER__DISCOVERY_STRATEGY=static
@@ -101,6 +105,7 @@ services:
       restart: always
       networks:
         - fog_network
+        - chirpstack-docker_lorawan
       hostname: emqx@fog-emqx2.fog_network
       volumes:
         - fog_emqx2_data:/opt/emqx/data
@@ -122,6 +127,7 @@ services:
       restart: always
       networks:
         - fog_network
+        - chirpstack-docker_lorawan
       hostname: emqx@fog-emqx3.fog_network
       volumes:
         - fog_emqx3_data:/opt/emqx/data
