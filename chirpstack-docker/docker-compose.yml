@@ -1,11 +1,17 @@
 version: '3.7'
 
-networks:
-  lorawan:
-    driver: bridge
+volumes:
+  postgresqldata:
+  redisdata:
+  influxdb_data:
+  emqx1_data:
+  emqx2_data:
+  emqx3_data:
 
 services:
-  # Load Balancer (HAProxy)
+  #############################################################################
+  #                           Load Balancer (HAProxy)                         #
+  #############################################################################
   haproxy:
     image: haproxy:2.6
     restart: always
@@ -21,42 +27,51 @@ services:
       timeout: 5s
       retries: 3
 
-  # EMQX Cluster - Node 1
+  #############################################################################
+  #                           EMQX MQTT CLUSTER                               #
+  #############################################################################
   emqx1:
     image: emqx:5.0
     restart: always
     networks:
       - lorawan
     hostname: emqx@emqx1.chirpstack-docker_lorawan
+    volumes:
+      - emqx1_data:/opt/emqx/data
     environment:
       - EMQX_NODE_NAME=emqx@emqx1.chirpstack-docker_lorawan
       - EMQX_CLUSTER__DISCOVERY_STRATEGY=static
       - EMQX_NODE__COOKIE=secretcookie
       - EMQX_CLUSTER__STATIC__SEEDS=emqx@emqx1.chirpstack-docker_lorawan,emqx@emqx2.chirpstack-docker_lorawan,emqx@emqx3.chirpstack-docker_lorawan
+      - EMQX_ALLOW_ANONYMOUS=true
+      - EMQX_ALLOW_WILDCARD_SUBSCRIPTION=true
     ports:
-      - "18083:18083"
+      - "18083:18083"  # Exposes the EMQX dashboard
     healthcheck:
-      test: ["CMD", "nc", "-z", "localhost", "1883"]
-      interval: 10s
-      timeout: 5s
+      test: [ "CMD", "/opt/emqx/bin/emqx", "ctl", "status" ]
+      interval: 5s
+      timeout: 25s
       retries: 5
 
-  # EMQX Cluster - Node 2
   emqx2:
     image: emqx:5.0
     restart: always
     networks:
       - lorawan
     hostname: emqx@emqx2.chirpstack-docker_lorawan
+    volumes:
+      - emqx2_data:/opt/emqx/data
     environment:
       - EMQX_NODE_NAME=emqx@emqx2.chirpstack-docker_lorawan
       - EMQX_CLUSTER__DISCOVERY_STRATEGY=static
       - EMQX_NODE__COOKIE=secretcookie
       - EMQX_CLUSTER__STATIC__SEEDS=emqx@emqx1.chirpstack-docker_lorawan,emqx@emqx2.chirpstack-docker_lorawan,emqx@emqx3.chirpstack-docker_lorawan
+      - EMQX_ALLOW_ANONYMOUS=true
+      - EMQX_ALLOW_WILDCARD_SUBSCRIPTION=true
     healthcheck:
-      test: ["CMD", "nc", "-z", "localhost", "1883"]
-      interval: 10s
-      timeout: 5s
+      test: [ "CMD", "/opt/emqx/bin/emqx", "ctl", "status" ]
+      interval: 5s
+      timeout: 25s
       retries: 5
 
   emqx3:
@@ -65,18 +80,62 @@ services:
     networks:
       - lorawan
     hostname: emqx@emqx3.chirpstack-docker_lorawan
+    volumes:
+      - emqx3_data:/opt/emqx/data
     environment:
       - EMQX_NODE_NAME=emqx@emqx3.chirpstack-docker_lorawan
       - EMQX_CLUSTER__DISCOVERY_STRATEGY=static
       - EMQX_NODE__COOKIE=secretcookie
       - EMQX_CLUSTER__STATIC__SEEDS=emqx@emqx1.chirpstack-docker_lorawan,emqx@emqx2.chirpstack-docker_lorawan,emqx@emqx3.chirpstack-docker_lorawan
+      - EMQX_ALLOW_ANONYMOUS=true
+      - EMQX_ALLOW_WILDCARD_SUBSCRIPTION=true
     healthcheck:
-      test: [ "CMD", "nc", "-z", "localhost", "1883" ]
+      test: [ "CMD", "/opt/emqx/bin/emqx", "ctl", "status" ]
+      interval: 5s
+      timeout: 25s
+      retries: 5
+
+  #############################################################################
+  #                            PostgreSQL                                     #
+  #############################################################################
+  postgres:
+    image: postgres:14-alpine
+    restart: always
+    networks:
+      - lorawan
+    volumes:
+      - ./configuration/postgresql/initdb:/docker-entrypoint-initdb.d
+      - postgresqldata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=chirpstack
+      - POSTGRES_PASSWORD=chirpstack
+      - POSTGRES_DB=chirpstack
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "chirpstack"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # ChirpStack Core
+  #############################################################################
+  #                            Redis                                          #
+  #############################################################################
+  redis:
+    image: redis:7-alpine
+    restart: always
+    networks:
+      - lorawan
+    command: redis-server --save 300 1 --save 60 100 --appendonly no
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  #############################################################################
+  #                           ChirpStack Core                                 #
+  #############################################################################
   chirpstack:
     image: chirpstack/chirpstack:4
     command: -c /etc/chirpstack
@@ -96,15 +155,15 @@ services:
       - POSTGRESQL_HOST=postgres
     ports:
       - "8080:8080"
-    expose:
-      - "9108"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
       timeout: 10s
       retries: 3
 
-  # Gateway Bridge EU868
+  #############################################################################
+  #                   Gateway Bridges for Multiple Regions                    #
+  #############################################################################
   chirpstack-gateway-bridge-eu868:
     image: chirpstack/chirpstack-gateway-bridge:4
     restart: always
@@ -120,7 +179,6 @@ services:
       timeout: 10s
       retries: 3
 
-  # Gateway Bridge US915
   chirpstack-gateway-bridge-us915:
     image: chirpstack/chirpstack-gateway-bridge:4
     restart: always
@@ -136,23 +194,6 @@ services:
       timeout: 10s
       retries: 3
 
-  # Gateway Bridge KR920
-  chirpstack-gateway-bridge-kr920:
-    image: chirpstack/chirpstack-gateway-bridge:4
-    restart: always
-    networks:
-      - lorawan
-    ports:
-      - "1702:1700/udp"
-    volumes:
-      - ./configuration/chirpstack-gateway-bridge/chirpstack-gateway-bridge-kr920.toml:/etc/chirpstack-gateway-bridge/chirpstack-gateway-bridge.toml
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080/health" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # Gateway Bridge IN865
   chirpstack-gateway-bridge-in865:
     image: chirpstack/chirpstack-gateway-bridge:4
     restart: always
@@ -163,12 +204,11 @@ services:
     volumes:
       - ./configuration/chirpstack-gateway-bridge/chirpstack-gateway-bridge-in865.toml:/etc/chirpstack-gateway-bridge/chirpstack-gateway-bridge.toml
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080/health" ]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
       timeout: 10s
       retries: 3
 
-  # Gateway Bridge RU864
   chirpstack-gateway-bridge-ru864:
     image: chirpstack/chirpstack-gateway-bridge:4
     restart: always
@@ -179,12 +219,14 @@ services:
     volumes:
       - ./configuration/chirpstack-gateway-bridge/chirpstack-gateway-bridge-ru864.toml:/etc/chirpstack-gateway-bridge/chirpstack-gateway-bridge.toml
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080/health" ]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
       timeout: 10s
       retries: 3
 
-  # ChirpStack REST API
+  #############################################################################
+  #                           ChirpStack REST API                             #
+  #############################################################################
   chirpstack-rest-api:
     image: chirpstack/chirpstack-rest-api:4
     restart: always
@@ -201,40 +243,54 @@ services:
       timeout: 10s
       retries: 3
 
-  # PostgreSQL Database
-  postgres:
-    image: postgres:14-alpine
-    restart: always
+  #############################################################################
+  #                         InfluxDB (for metrics)                            #
+  #############################################################################
+  influxdb:
+    image: influxdb:2.7
+    container_name: influxdb
     networks:
       - lorawan
     volumes:
-      - ./configuration/postgresql/initdb:/docker-entrypoint-initdb.d
-      - postgresqldata:/var/lib/postgresql/data
+      - influxdb_data:/var/lib/influxdb2
+    ports:
+      - "8087:8087"
+    restart: always
     environment:
-      - POSTGRES_USER=chirpstack
-      - POSTGRES_PASSWORD=chirpstack
-      - POSTGRES_DB=chirpstack
-    healthcheck:
-      test: ["CMD", "pg_isready", "-U", "chirpstack"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=root
+      - DOCKER_INFLUXDB_INIT_PASSWORD=mystrongpassword123
+      - DOCKER_INFLUXDB_INIT_ORG=lorawan_org
+      - DOCKER_INFLUXDB_INIT_BUCKET=lorawan_bucket
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-super-secret-token
+      - INFLUXD_HTTP_BIND_ADDRESS=:8087
 
-  # Redis Database
-  redis:
-    image: redis:7-alpine
+  #############################################################################
+  #   Automated Metrics Container (Python scripts + Dockerfile in subfolder)  #
+  #############################################################################
+  automated-metrics:
+    build: automated_metrics
+    container_name: automated_metrics_container
     restart: always
+    depends_on:
+      - haproxy
+      - influxdb
     networks:
       - lorawan
-    command: redis-server --save 300 1 --save 60 100 --appendonly no
-    volumes:
-      - redisdata:/data
+    environment:
+      - MQTT_BROKER=haproxy
+      - MQTT_PORT=1883
+      - MQTT_TOPIC=application/+/device/+/event/up
+      - INFLUX_URL=http://influxdb:8087
+      - INFLUX_TOKEN=my-super-secret-token
+      - INFLUX_ORG=lorawan_org
+      - INFLUX_BUCKET=lorawan_bucket
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      test: ["CMD-SHELL", "pgrep python"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-volumes:
-  postgresqldata:
-  redisdata:
+networks:
+  lorawan:
+    driver: bridge

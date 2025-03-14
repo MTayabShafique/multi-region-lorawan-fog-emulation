@@ -26,9 +26,9 @@ services:
   emqx1:
     image: emqx/emqx:5.8.5
     container_name: emqx_fog1
-    hostname: emqx_fog1.fog-sensiot_network  # 🛠 Fix: Fully Qualified Name
+    hostname: emqx_fog1.fog-sensiot_network  
     environment:
-        - EMQX_NODE_NAME=emqx@emqx_fog1.fog-sensiot_network  # 🛠 Fix: Use FQDN
+        - EMQX_NODE_NAME=emqx@emqx_fog1.fog-sensiot_network 
         - EMQX_NODE__COOKIE=secretcookie
         - EMQX_CLUSTER__DISCOVERY_STRATEGY=static
         - EMQX_CLUSTER__STATIC__SEEDS=emqx@emqx_fog1.fog-sensiot_network,emqx@emqx_fog2.fog-sensiot_network
@@ -36,7 +36,7 @@ services:
       - emqx_data_1:/opt/emqx/data
     ports:
       - "2883:1883"
-      - "18084:18083"  # For dashboard access if needed
+      - "18084:18083"
     networks:
       - fog-sensiot_network
     restart: always
