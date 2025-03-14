@@ -19,10 +19,10 @@
   },
   "services": {
     "mqtt": {
-      "broker": "haproxy_fog",
+      "broker": "fog-nodes_haproxy_1",
       "port": 1883,
       "topics": {
-        "processed_topic": "fog/+/processed",
+        "processed_topic": "central/data",
          "downlink_topic_template": "application/{application_id}/device/{device_id}/command/down"
       },
       "connection": {

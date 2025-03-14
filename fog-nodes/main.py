@@ -13,7 +13,7 @@ MQTT_BROKER = os.getenv("MQTT_BROKER", "chirpstack-docker_haproxy_1")
 MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
 CENTRAL_TOPIC = os.getenv("CENTRAL_TOPIC", "central/data")
 FOG_SUB_TOPIC = f"region/{REGION}/#"
-AGGREGATION_INTERVAL = int(os.getenv("AGGREGATION_INTERVAL", "150"))
+AGGREGATION_INTERVAL = int(os.getenv("AGGREGATION_INTERVAL", "300"))
 PROMETHEUS_PORT = int(os.getenv("PROMETHEUS_PORT", "8000"))
 
 import logging
