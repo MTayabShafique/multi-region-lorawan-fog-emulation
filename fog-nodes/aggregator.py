@@ -52,7 +52,7 @@ def aggregation_worker(mqtt_client, aggregation_interval, metrics):
                         "region": data["region"],
                         "avg_temperature": avg_temp,
                         "avg_humidity": avg_hum,
-                        "timestamp": time.time(),
+                        "timestamp": datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S %Z'),
                         "event": data["event"]
                     }
                     aggregated_messages.append(aggregated_data)

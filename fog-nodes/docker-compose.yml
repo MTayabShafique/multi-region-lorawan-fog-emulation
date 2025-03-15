@@ -81,7 +81,6 @@ services:
       restart: always
       networks:
         - fog_network
-        - chirpstack-docker_lorawan
       hostname: emqx@fog-emqx1.fog_network
       volumes:
         - fog_emqx1_data:/opt/emqx/data
@@ -105,7 +104,6 @@ services:
       restart: always
       networks:
         - fog_network
-        - chirpstack-docker_lorawan
       hostname: emqx@fog-emqx2.fog_network
       volumes:
         - fog_emqx2_data:/opt/emqx/data
@@ -127,7 +125,7 @@ services:
       restart: always
       networks:
         - fog_network
-        - chirpstack-docker_lorawan
+        #- chirpstack-docker_lorawan
       hostname: emqx@fog-emqx3.fog_network
       volumes:
         - fog_emqx3_data:/opt/emqx/data
