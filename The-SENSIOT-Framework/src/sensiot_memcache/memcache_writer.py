@@ -1,7 +1,7 @@
 import logging
 import threading
 import json
-import memcache as memcache_lib
+import memcache
 
 logger = logging.getLogger("sensiot")
 logger.setLevel(logging.INFO)
@@ -14,20 +14,17 @@ class MemcacheWriter(threading.Thread):
         self.queue = queue
         self.config = config
 
-        # Memcache configuration
-        self.memcache_host = self.config.get("ip", "localhost")  # Default to localhost if not provided
-        self.memcache_port = int(self.config.get("port", 11211))  # Default to port 11211
-        self.key_expiration = int(self.config.get("key_expiration", 600))  # Default to 600 seconds
+        self.memcache_host = self.config.get("ip", "localhost")
+        self.memcache_port = int(self.config.get("port", 11211))
+        self.key_expiration = int(self.config.get("key_expiration", 600))
 
-        # Memcache client
-        self.memcache_client = memcache_lib.Client(
+        self.memcache_client = memcache.Client(
             [f"{self.memcache_host}:{self.memcache_port}"], debug=True
         )
 
         logger.info(f"{self.name} initialized successfully.")
 
     def __connect_memcache(self):
-        """Test the connection to Memcached."""
         try:
             logger.debug(f"Connecting to Memcached at {self.memcache_host}:{self.memcache_port}")
             self.memcache_client.set("test", "test_value", time=10)
@@ -39,11 +36,10 @@ class MemcacheWriter(threading.Thread):
                 logger.error("Test value not stored or retrieved correctly from Memcached.")
                 return False
         except Exception as e:
-            logger.error(f"Failed to connect to Memcached at {self.memcache_host}:{self.memcache_port}: {e}")
+            logger.error(f"Failed to connect to Memcached: {e}")
             return False
 
     def run(self):
-        """Process messages from the queue and store the complete payload in Memcached."""
         logger.info(f"Started: {self.name}")
 
         if not self.__connect_memcache():
@@ -55,10 +51,9 @@ class MemcacheWriter(threading.Thread):
                 if not self.queue.empty():
                     payload = self.queue.get()
 
-                    # Use the key 'device_eui' from the payload
-                    device_id = payload["device_eui"]
+                    # Use 'device_eui' if available, otherwise fall back to 'device_id'
+                    device_id = payload.get("device_eui", payload.get("device_id", "unknown"))
 
-                    # Ensure a backup key list exists
                     existing_keys = self.memcache_client.get("all_keys") or []
 
                     if device_id not in existing_keys:
@@ -66,7 +61,6 @@ class MemcacheWriter(threading.Thread):
                         self.memcache_client.set("all_keys", existing_keys, time=self.key_expiration)
                         logger.debug(f"Updated key list in Memcached: {existing_keys}")
 
-                    # Store the complete payload as JSON without additional conversion
                     json_payload = json.dumps(payload)
                     self.memcache_client.set(device_id, json_payload, time=self.key_expiration)
                     logger.info(f"Stored data for device {device_id} in Memcached: {payload}")
