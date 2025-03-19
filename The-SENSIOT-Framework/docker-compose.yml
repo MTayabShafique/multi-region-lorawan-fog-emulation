@@ -2,7 +2,7 @@ version: '3.3'
 
 networks:
   backend:
-  fog-sensiot_network:  # Shared network for SensIoT and Fog Nodes
+  fog-nodes_fog_network:  # Shared network for SensIoT and Fog Nodes
     external: true  # Ensures it connects to the Fog Node network
 
 services:
@@ -18,7 +18,7 @@ services:
       - ./config/mosquitto:/mosquitto/config
     networks:
       - backend
-      - fog-sensiot_network  # Connect to Fog Node network
+      - fog-nodes_fog_network  # Connect to Fog Node network
 
   #############################
   # Memcached Service         #
@@ -33,7 +33,7 @@ services:
           memory: 150M
     networks:
       - backend
-      - fog-sensiot_network  # Connect to Fog Node network
+      - fog-nodes_fog_network  # Connect to Fog Node network
 
   memcached_exporter:
     image: prom/memcached-exporter
@@ -46,7 +46,7 @@ services:
       - memcached
     networks:
       - backend
-      - fog-sensiot_network
+      - fog-nodes_fog_network
 
   #############################
   # InfluxDB Service          #
@@ -66,7 +66,7 @@ services:
       - "8086:8086"
     networks:
       - backend
-      - fog-sensiot_network
+      - fog-nodes_fog_network
 
   #############################
   # Chronograf UI             #
@@ -79,7 +79,7 @@ services:
     command: chronograf --influxdb-url=http://influxdb:8086
     networks:
       - backend
-      - fog-sensiot_network
+      - fog-nodes_fog_network
     ports:
       - "8888:8888"
 
@@ -98,7 +98,7 @@ services:
       - ./config/grafana/provisioning:/etc/grafana/provisioning
     networks:
       - backend
-      - fog-sensiot_network
+      - fog-nodes_fog_network
     ports:
       - "3000:3000"
 
@@ -114,7 +114,7 @@ services:
       - '--config.file=/etc/prometheus/prometheus.yml'
     networks:
       - backend
-      - fog-sensiot_network
+      - fog-nodes_fog_network
     ports:
       - "9090:9090"
 
@@ -130,7 +130,7 @@ services:
       - ./config/local_configuration.json:/etc/sensiot/local_configuration.json
     networks:
       - backend
-      - fog-sensiot_network
+      - fog-nodes_fog_network
     tty: true
     environment:
       CONFIG: ./sensiot.json
@@ -148,7 +148,7 @@ services:
       - ./config/sensiot.json:/app/sensiot.json
     networks:
       - backend
-      - fog-sensiot_network
+      - fog-nodes_fog_network
     tty: true
     environment:
       CONFIG: ./sensiot.json
@@ -166,7 +166,7 @@ services:
       - ./config/sensiot.json:/app/sensiot.json
     networks:
       - backend
-      - fog-sensiot_network
+      - fog-nodes_fog_network
     tty: true
     environment:
       CONFIG: ./sensiot.json
@@ -184,7 +184,7 @@ services:
       - ./config/sensiot.json:/app/sensiot.json
     networks:
       - backend
-      - fog-sensiot_network
+      - fog-nodes_fog_network
     tty: true
     environment:
       CONFIG: ./sensiot.json
@@ -204,7 +204,7 @@ services:
       - ./config/sensiot.json:/app/sensiot.json
     networks:
       - backend
-      - fog-sensiot_network
+      - fog-nodes_fog_network
     ports:
       - "5001:5000"
     tty: true

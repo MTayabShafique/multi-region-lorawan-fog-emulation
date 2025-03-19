@@ -3,6 +3,11 @@ version: '3.7'
 networks:
   chirpstack-docker_lorawan:
     external: true
+  fog-nodes_fog_network:
+    external: true
+  the-sensiot-framework_backend:
+    external: true
+
 services:
   prometheus:
     image: prom/prometheus:latest
@@ -13,6 +18,7 @@ services:
       - "9091:9090"
     networks:
       - chirpstack-docker_lorawan
+      - fog-nodes_fog_network
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
     container_name: cadvisor
@@ -24,6 +30,8 @@ services:
       - /var/lib/docker:/var/lib/docker:ro
     networks:
       - chirpstack-docker_lorawan
+      - fog-nodes_fog_network
+      - the-sensiot-framework_backend
   node-exporter:
     image: prom/node-exporter:latest
     container_name: node_exporter
@@ -31,6 +39,8 @@ services:
       - "9100:9100"
     networks:
       - chirpstack-docker_lorawan
+      - fog-nodes_fog_network
+      - the-sensiot-framework_backend
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
@@ -45,3 +55,4 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     networks:
       - chirpstack-docker_lorawan
+      - fog-nodes_fog_network

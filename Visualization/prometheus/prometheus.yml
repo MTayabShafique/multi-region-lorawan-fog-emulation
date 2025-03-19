@@ -6,7 +6,7 @@ scrape_configs:
   # --- ChirpStack Core ---
   - job_name: 'chirpstack_core'
     static_configs:
-      - targets: ['chirpstack-docker_chirpstack_1:9108']  # Adjust name:port as needed
+      - targets: ['chirpstack-docker_chirpstack_1:9108']
 
   # --- Gateway Bridges ---
   - job_name: 'chirpstack_gateway_bridge_eu868'
@@ -56,13 +56,8 @@ scrape_configs:
     metrics_path: '/api/v5/prometheus/stats'
     scheme: 'http'
 
-  - job_name: 'emqx_stats_aggregated'
-    static_configs:
-      - targets: ['chirpstack-docker_emqx1_1:18083']
-    metrics_path: '/api/v5/prometheus/stats?mode=all_nodes_aggregated'
-    scheme: 'http'
-
   - job_name: 'fog_nodes'
+    scrape_interval: 1s
     static_configs:
       - targets:
           - 'fog-nodes_fog-node-us915_1:8000'

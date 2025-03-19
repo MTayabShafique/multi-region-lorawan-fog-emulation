@@ -15,7 +15,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 31,
+  "id": 3,
   "links": [],
   "panels": [
     {
@@ -226,16 +226,16 @@
             "barAlignment": 0,
             "barWidthFactor": 0.6,
             "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
+            "fillOpacity": 10,
+            "gradientMode": "opacity",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
             },
             "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
+            "lineInterpolation": "stepBefore",
+            "lineWidth": 2,
             "pointSize": 5,
             "scaleDistribution": {
               "type": "linear"
@@ -264,8 +264,7 @@
                 "value": 80
               }
             ]
-          },
-          "unit": "ms"
+          }
         },
         "overrides": []
       },
@@ -275,15 +274,14 @@
         "x": 0,
         "y": 8
       },
-      "id": 4,
+      "id": 6,
       "options": {
         "legend": {
           "calcs": [],
-          "displayMode": "list",
+          "displayMode": "table",
           "placement": "bottom",
           "showLegend": true
         },
-        "showPoints": "always",
         "tooltip": {
           "hideZeros": false,
           "mode": "single",
@@ -293,11 +291,11 @@
       "pluginVersion": "11.5.2",
       "targets": [
         {
-          "query": "from(bucket: \"lorawan_bucket\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"uplink_metrics\" and r._field == \"latency_ms\")\n  |> filter(fn: (r) => r.region =~ /^${region:regex}$/)\n  |> filter(fn: (r) => r.device =~ /^${device:regex}$/)\n  |> group(columns: [\"device\"])\n  |> yield(name: \"latency_ms_raw\")",
+          "query": "from(bucket: \"lorawan_bucket\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"uplink_metrics\" and r._field == \"sf\")\n  |> filter(fn: (r) => r.region =~ /^${region:regex}$/)\n  |> filter(fn: (r) => r.device =~ /^${device:regex}$/)\n  |> group(columns: [\"device\"])\n  |> yield(name: \"sf_raw\")",
           "refId": "A"
         }
       ],
-      "title": "⏱️ Network Latency (ms)",
+      "title": "📶 Spreading Factor (SF)",
       "type": "timeseries"
     },
     {
@@ -405,97 +403,6 @@
       },
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "opacity",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "stepBefore",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "links": [],
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 16
-      },
-      "id": 6,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "query": "from(bucket: \"lorawan_bucket\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"uplink_metrics\" and r._field == \"sf\")\n  |> filter(fn: (r) => r.region =~ /^${region:regex}$/)\n  |> filter(fn: (r) => r.device =~ /^${device:regex}$/)\n  |> group(columns: [\"device\"])\n  |> yield(name: \"sf_raw\")",
-          "refId": "A"
-        }
-      ],
-      "title": "📶 Spreading Factor (SF)",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "P951FEA4DE68E13C5"
-      },
-      "fieldConfig": {
-        "defaults": {
           "custom": {
             "align": "auto",
             "cellOptions": {
@@ -524,7 +431,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 24
+        "y": 16
       },
       "id": 7,
       "options": {
@@ -617,6 +524,6 @@
   "timezone": "browser",
   "title": "📊 LoRa Modulation Metrics",
   "uid": "eefbmkg48zf9ce",
-  "version": 4,
+  "version": 1,
   "weekStart": ""
 }
