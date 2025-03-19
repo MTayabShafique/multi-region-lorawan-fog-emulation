@@ -5,6 +5,8 @@ networks:
     external: true
   fog-nodes_fog_network:
     external: true
+  the-sensiot-framework_backend:
+    external: true
 
 services:
   prometheus:
@@ -29,6 +31,7 @@ services:
     networks:
       - chirpstack-docker_lorawan
       - fog-nodes_fog_network
+      - the-sensiot-framework_backend
   node-exporter:
     image: prom/node-exporter:latest
     container_name: node_exporter
@@ -37,6 +40,7 @@ services:
     networks:
       - chirpstack-docker_lorawan
       - fog-nodes_fog_network
+      - the-sensiot-framework_backend
   grafana:
     image: grafana/grafana:latest
     container_name: grafana

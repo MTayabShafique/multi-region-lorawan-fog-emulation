@@ -2,7 +2,7 @@ import logging
 import threading
 import json
 import paho.mqtt.client as mqtt
-
+from datetime import datetime
 # Import the counters from metrics.py
 from metrics import received_counter, dropped_counter
 
@@ -44,6 +44,10 @@ class MqttReader(threading.Thread):
                     self.event.wait(5)
         return False
 
+    def __extract_device_id(self, payload):
+        """Helper to extract device ID from multiple possible fields."""
+        return payload.get("device_id") or payload.get("device_eui", "unknown")
+
     def __on_message(self, client, userdata, msg):
         """Handle received MQTT messages with enriched payload."""
         logger.info(f"Message received from MQTT topic {msg.topic}")
@@ -51,18 +55,18 @@ class MqttReader(threading.Thread):
             data = msg.payload.decode()
             logger.debug(f"Raw payload: {data}")
             parsed_data = json.loads(data)
-
-            # If the payload includes device and region information, update the received counter.
-            device_id = parsed_data.get("device_eui", "unknown")
+            logger.debug(f"Parsed data keys: {parsed_data.keys()}")
+            device_id = self.__extract_device_id(parsed_data)
             region = parsed_data.get("region", "unknown")
+
+            # Increment Prometheus counter
             received_counter.labels(region=region, device_id=device_id).inc()
 
-            # Queue the enriched data for further processing.
+            # Queue the enriched data for further processing
             self.queue.put(parsed_data)
             logger.info(f"Enriched data queued: {parsed_data}")
         except json.JSONDecodeError as e:
             logger.error(f"JSON decoding failed: {e}")
-            # Increment the dropped counter if decoding fails
             dropped_counter.labels(region="unknown", device_id="unknown").inc()
         except Exception as e:
             logger.error(f"Error while processing message: {e}")

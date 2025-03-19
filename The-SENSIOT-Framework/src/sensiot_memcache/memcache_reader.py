@@ -64,7 +64,7 @@ class MemcacheReader(threading.Thread):
             stats = self.memcache_client.get_stats()
             keys = []
 
-            # Attempt to use `stats cachedump` (may fail on some Memcached versions)
+            # Attempt to use `stats cachedump`
             for slab in stats[0][1].keys():
                 if slab.startswith("items:"):
                     slab_id = slab.split(":")[1]
