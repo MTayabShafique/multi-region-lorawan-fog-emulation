@@ -64,3 +64,8 @@ scrape_configs:
           - 'fog-nodes_fog-node-eu868_1:8000'
           - 'fog-nodes_fog-node-ru864_1:8000'
           - 'fog-nodes_fog-node-in865_1:8000'
+  - job_name: 'chirpstack_simulator'
+    static_configs:
+      - targets: ['172.17.0.1:9009']
+    metrics_path: '/metrics'
+    scheme: 'http'
