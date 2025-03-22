@@ -5,8 +5,15 @@ import paho.mqtt.client as mqtt
 from utils import parse_iso_timestamp
 from processing import process_message
 from metrics import received_counter, latency_summary, latency_histogram, dropped_counter
+from collections import defaultdict
 
+
+if not logging.getLogger().hasHandlers():
+    logging.basicConfig(level=logging.INFO, format='[%(asctime)s] [%(levelname)s] %(message)s')
+    
 logger = logging.getLogger(__name__)
+
+uplink_counter = defaultdict(int)
 
 def on_connect(client, userdata, flags, rc, properties=None):
     region = userdata.get("region")
@@ -17,6 +24,8 @@ def on_connect(client, userdata, flags, rc, properties=None):
 
 def on_message(client, userdata, msg):
     region = userdata.get("region")
+    uplink_counter[region] += 1
+    logger.info(f"[{region}] Uplink count: {uplink_counter[region]}")
     logger.info(f"[{region}] Received raw message on topic: {msg.topic}")
     try:
         # Get the time when the fog node receives the message (offset-aware)
