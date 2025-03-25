@@ -115,3 +115,84 @@ To create the bridge network between SensIoT and Fog Nodes:
 docker network create fog-sensiot_network
 ```
 
+---
+
+## Important Steps for Testbed Configuration
+
+### Configuring ChirpStack Device Profiles
+
+To enable **LoRa metrics processing** and **message decoding**, configure **Device Profiles** correctly for each region.
+
+---
+
+#### Step 1: Add the JavaScript Decoder Function
+
+1. Open **ChirpStack UI** at [http://localhost:8080](http://localhost:8080).
+2. Navigate to **Device Profiles**.
+3. Edit or create the Device Profile for your region (e.g., `EU868`, `US915_0`, etc.).
+4. Go to the **"CODEC"** tab.
+5. Choose **JavaScript functions** as the codec type.
+6. Paste the following into the **Uplink decoder**:
+
+```javascript
+function decodeUplink(input) {
+  var bytes = input.bytes;
+  var fPort = input.fPort;
+  
+  // Convert byte array to string
+  var text = String.fromCharCode.apply(null, bytes);
+  var decoded = {};
+  var warnings = [];
+  var errors = [];
+
+  // Try parsing as standard JSON first
+  try {
+    decoded = JSON.parse(text);
+  } catch (e) {
+    // If parsing fails, try replacing single quotes with double quotes
+    warnings.push("Initial JSON.parse failed, attempting to replace single quotes with double quotes.");
+    var modified = text.replace(/'/g, '"');
+    try {
+      decoded = JSON.parse(modified);
+    } catch (e2) {
+        errors.push("Failed to parse JSON even after modifying quotes: " + e2);
+    }
+  }
+
+  return {
+    data: decoded,
+    warnings: warnings,
+    errors: errors
+  };
+}
+```
+
+7. Click **Submit** to save.
+
+---
+
+#### Step 2: Add Region Tag
+
+1. In the same **Device Profile**, scroll to the **Tags** section.
+2. Add the following tag:
+
+| Key         | Value     |
+|-------------|-----------|
+| region_name | eu868 / us915_0 / ru864 / in865 |
+
+Repeat for each region with the appropriate value.
+
+---
+
+#### Summary: Regional Device Profiles
+
+| Region      | Device Profile Name | region_name Tag |
+|-------------|----------------------|------------------|
+| EU868       | EU868 Profile         | eu868           |
+| US915_0     | US915 Profile         | us915_0         |
+| RU864       | RU864 Profile         | ru864           |
+| IN865       | IN865 Profile         | in865           |
+
+---
+
+
