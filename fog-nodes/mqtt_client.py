@@ -7,13 +7,14 @@ from processing import process_message
 from metrics import received_counter, latency_summary, latency_histogram, dropped_counter
 from collections import defaultdict
 
-
+# Set up logging if not already configured
 if not logging.getLogger().hasHandlers():
     logging.basicConfig(level=logging.INFO, format='[%(asctime)s] [%(levelname)s] %(message)s')
-    
 logger = logging.getLogger(__name__)
 
+# Local in-memory counters (keyed by region)
 uplink_counter = defaultdict(int)
+local_dropped_counter = defaultdict(int)
 
 def on_connect(client, userdata, flags, rc, properties=None):
     region = userdata.get("region")
@@ -24,23 +25,23 @@ def on_connect(client, userdata, flags, rc, properties=None):
 
 def on_message(client, userdata, msg):
     region = userdata.get("region")
+    # Update and log local uplink counter
     uplink_counter[region] += 1
     logger.info(f"[{region}] Uplink count: {uplink_counter[region]}")
     logger.info(f"[{region}] Received raw message on topic: {msg.topic}")
+    
     try:
-        # Get the time when the fog node receives the message (offset-aware)
+        # Capture receive time and parse payload
         received_at_fog = datetime.now(timezone.utc)
-        # Instead of expecting an outer payload with an inner payload,
-        # we assume the received JSON is the complete payload.
         payload = json.loads(msg.payload.decode())
         logger.info(f"[{region}] Parsed payload: {payload}")
 
-        # Update received counter with device info (if available)
+        # Update Prometheus received counter using device info (if available)
         device_info = payload.get("deviceInfo", {})
         device_id = device_info.get("devEui", "unknown")
         received_counter.labels(region=region, device_id=device_id).inc()
 
-        # Calculate ChirpStack -> Fog Node latency using nsTime from rxInfo if present
+        # Calculate and log latency if available
         rx_info = payload.get("rxInfo", [{}])[0]
         ns_time_str = rx_info.get("nsTime")
         if ns_time_str:
@@ -51,11 +52,15 @@ def on_message(client, userdata, msg):
             latency_histogram.labels(region=region, device_id=device_id).observe(chirpstack_fog_latency)
         else:
             logger.warning(f"[{region}] nsTime missing in payload")
-        # Process the complete payload
+
+        # Hand off to further processing
         process_message(payload, msg.topic)
+
     except Exception as e:
         logger.error(f"[{region}] Error processing message: {e}")
         dropped_counter.labels(region=region, device_id="unknown").inc()
+        local_dropped_counter[region] += 1
+        logger.info(f"[{region}] Local dropped count: {local_dropped_counter[region]}")
 
 def setup_mqtt_client(client_id, region, fog_sub_topic):
     client = mqtt.Client(client_id=client_id, protocol=mqtt.MQTTv311)
@@ -63,3 +68,4 @@ def setup_mqtt_client(client_id, region, fog_sub_topic):
     client.on_connect = on_connect
     client.on_message = on_message
     return client
+
