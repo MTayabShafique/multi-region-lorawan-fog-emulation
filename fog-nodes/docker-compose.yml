@@ -1,9 +1,9 @@
 version: '3.7'
 
 volumes:
-  fog_emqx1_data:
-  fog_emqx2_data:
-  fog_emqx3_data:
+  emqx1_data:
+  emqx2_data:
+  emqx3_data:
 
 services:
   #############################################################################
@@ -73,74 +73,88 @@ services:
         timeout: 5s
         retries: 3
 
-  #############################################################################
-  #                           EMQX MQTT CLUSTER (3 Nodes)                     #
-  #############################################################################
+    #############################################################################
+    #                           EMQX MQTT CLUSTER (3 Nodes)                     #
+    #############################################################################
   emqx1:
-      image: emqx:5.0
-      restart: always
-      networks:
-        - fog_network
-      hostname: emqx@fog-emqx1.fog_network
-      volumes:
-        - fog_emqx1_data:/opt/emqx/data
-      ports:
-        - "18084:18083"
-      environment:
-        - EMQX_NODE_NAME=emqx@fog-emqx1.fog_network
-        - EMQX_CLUSTER__DISCOVERY_STRATEGY=static
-        - EMQX_NODE__COOKIE=secretcookie
-        - EMQX_CLUSTER__STATIC__SEEDS=emqx@fog-emqx1.fog_network,emqx@fog-emqx2.fog_network,emqx@fog-emqx3.fog_network
-        - EMQX_ALLOW_ANONYMOUS=true
-        - EMQX_ALLOW_WILDCARD_SUBSCRIPTION=true
-      healthcheck:
-        test: [ "CMD", "nc", "-z", "localhost", "1883" ]
-        interval: 10s
-        timeout: 5s
+    image: emqx:5.0
+    container_name: emqx_node1
+    restart: always
+    environment:
+        - "EMQX_NAME=emqx"
+        - "EMQX_HOST=node1.emqx.io"
+        - "EMQX_NODE__COOKIE=mystrongsecretcookie123"
+        - "EMQX_CLUSTER__DISCOVERY_STRATEGY=static"
+        - "EMQX_CLUSTER__STATIC__SEEDS=emqx@node1.emqx.io,emqx@node2.emqx.io,emqx@node3.emqx.io"
+    volumes:
+      - emqx1_data:/opt/emqx/data
+    networks:
+      fog_network:
+        aliases:
+          - node1.emqx.io
+    healthcheck:
+        test: [ "CMD", "/opt/emqx/bin/emqx_ctl", "status" ]
+        interval: 5s
+        timeout: 25s
         retries: 5
+    ports:
+      - "18084:18083"  # Dashboard mapping
+    deploy:
+      resources:
+        limits:
+          memory: 2G
 
   emqx2:
-      image: emqx:5.0
-      restart: always
-      networks:
-        - fog_network
-      hostname: emqx@fog-emqx2.fog_network
-      volumes:
-        - fog_emqx2_data:/opt/emqx/data
-      environment:
-        - EMQX_NODE_NAME=emqx@fog-emqx2.fog_network
-        - EMQX_CLUSTER__DISCOVERY_STRATEGY=static
-        - EMQX_NODE__COOKIE=secretcookie
-        - EMQX_CLUSTER__STATIC__SEEDS=emqx@fog-emqx1.fog_network,emqx@fog-emqx2.fog_network,emqx@fog-emqx3.fog_network
-        - EMQX_ALLOW_ANONYMOUS=true
-        - EMQX_ALLOW_WILDCARD_SUBSCRIPTION=true
-      healthcheck:
-        test: [ "CMD", "nc", "-z", "localhost", "1883" ]
-        interval: 10s
-        timeout: 5s
+    image: emqx:5.0
+    container_name: emqx_node2
+    restart: always
+    networks:
+      fog_network:
+        aliases:
+          - node2.emqx.io
+    volumes:
+      - emqx2_data:/opt/emqx/data
+    environment:
+      - "EMQX_NAME=emqx"
+      - "EMQX_HOST=node2.emqx.io"
+      - "EMQX_NODE__COOKIE=mystrongsecretcookie123"
+      - "EMQX_CLUSTER__DISCOVERY_STRATEGY=static"
+      - "EMQX_CLUSTER__STATIC__SEEDS=emqx@node1.emqx.io,emqx@node2.emqx.io,emqx@node3.emqx.io"
+    healthcheck:
+        test: [ "CMD", "/opt/emqx/bin/emqx_ctl", "status" ]
+        interval: 5s
+        timeout: 25s
         retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 2G
 
   emqx3:
-      image: emqx:5.0
-      restart: always
-      networks:
-        - fog_network
-        #- chirpstack-docker_lorawan
-      hostname: emqx@fog-emqx3.fog_network
-      volumes:
-        - fog_emqx3_data:/opt/emqx/data
-      environment:
-        - EMQX_NODE_NAME=emqx@fog-emqx3.fog_network
-        - EMQX_CLUSTER__DISCOVERY_STRATEGY=static
-        - EMQX_NODE__COOKIE=secretcookie
-        - EMQX_CLUSTER__STATIC__SEEDS=emqx@fog-emqx1.fog_network,emqx@fog-emqx2.fog_network,emqx@fog-emqx3.fog_network
-        - EMQX_ALLOW_ANONYMOUS=true
-        - EMQX_ALLOW_WILDCARD_SUBSCRIPTION=true
-      healthcheck:
-        test: [ "CMD", "nc", "-z", "localhost", "1883" ]
-        interval: 10s
-        timeout: 5s
+    image: emqx:5.0
+    container_name: emqx_node3
+    restart: always
+    networks:
+      fog_network:
+        aliases:
+          - node3.emqx.io
+    volumes:
+      - emqx3_data:/opt/emqx/data
+    environment:
+      - "EMQX_NAME=emqx"
+      - "EMQX_HOST=node3.emqx.io"
+      - "EMQX_NODE__COOKIE=mystrongsecretcookie123"
+      - "EMQX_CLUSTER__DISCOVERY_STRATEGY=static"
+      - "EMQX_CLUSTER__STATIC__SEEDS=emqx@node1.emqx.io,emqx@node2.emqx.io,emqx@node3.emqx.io"
+    healthcheck:
+        test: [ "CMD", "/opt/emqx/bin/emqx_ctl", "status" ]
+        interval: 5s
+        timeout: 25s
         retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 2G
 
 networks:
   fog_network:
