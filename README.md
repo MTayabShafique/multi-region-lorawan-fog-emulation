@@ -113,6 +113,99 @@ make build
 
 ## Important Steps for Testbed Configuration
 
+# LoRaWAN Simulation Setup using LWN Simulator & ChirpStack
+
+This README provides complete instructions to set up and integrate **LWN Simulator** with **ChirpStack** for simulating end-to-end LoRaWAN communication with virtual gateways and devices.
+
+---
+
+## LWN Simulator Setup
+
+###  Create a Virtual Device
+
+1. Go to `Devices > Add new device`.
+2. In the **General** tab:
+   - ✅ Check **Active**
+   - Set a **Name** (e.g., `Test-dev-01`)
+   - Click the 🔄 icon to generate a **DevEUI**
+   - Select a **Region** (e.g., `EU868`)
+   - Click **Save**
+
+3. In the **Activation** tab:
+   - ✅ Check **OTAA supported**
+   - Click 🔄 to generate the **AppKey**
+   - (Other fields like `DevAddr`, `NwkSKey`, `AppSKey` are auto-filled or unused for OTAA)
+
+4. In **Frame’s settings**:
+   - `Data Rate`: 0
+   - `FPort`: 1
+   - `Retransmission`: 1
+   - `FCnt`: 1
+   - ✅ Disable `FCntDown` validation
+
+5. In **Features**:
+   - ✅ Enable ADR
+   - `Range Antenna`: 10000
+
+6. In the **Payload** tab:
+   - `Uplink Interval`: `10` seconds
+   - Select `ConfirmedDataUp`
+   - Payload:
+     ```json
+     {"temperature": 30, "humidity": 10}
+     ```
+
+---
+
+###  Create a Virtual Gateway
+
+1. Go to `Gateways > Add Gateway`
+2. Ensure **Virtual Gateway** tab is selected
+3. Fill in:
+   - ✅ Active
+   - **Name**: e.g., `Dev-Gateway-1`
+   - **MAC Address**: e.g., `a365de9c7bea8e5b` (must match what you’ll use in ChirpStack)
+   - **KeepAlive**: 30 (default)
+   - (Optional) Set location via the map or coordinates
+
+4. Click **Save**
+
+---
+
+# ChirpStack Integration
+
+To mirror your simulated devices and gateways in ChirpStack, follow the steps below:
+
+---
+
+
+# Creating Device Profiles: EU868/US915/RU864/IN865
+
+The following device profile is configured for the LoRaWAN regions using ChirpStack.
+
+## General Settings for EU868 
+
+| Field                           | Value                      | Description                                                             |
+|---------------------------------|----------------------------|-------------------------------------------------------------------------|
+| **Name**                        | `Device-Profile-EU868`     | Descriptive name for this device profile.                               |
+| **Region**                      | `EU868`                    | Specifies the LoRaWAN frequency plan (EU868).                           |
+| **Region configuration**        | (leave blank if not used)  | Used for custom regional settings.                                      |
+| **MAC version**                 | `LoRaWAN 1.0.3`            | LoRaWAN MAC specification version.                                      |
+| **Regional parameters revision**| `A`                        | LoRaWAN Regional Parameters revision.                                   |
+| **ADR algorithm**               | `Default ADR algorithm`    | Adaptive Data Rate algorithm used (LoRa only).                          |
+| **Flush queue on activate**     | `Enabled`                  | Clears any queued downlinks when the device (re)joins.                  |
+| **Expected uplink interval**    | `3600` (seconds)           | Expected interval between uplinks in seconds.                           |
+| **Device-status request freq.** | `1` (req/day)              | Number of status requests sent daily to the device.                     |
+| **Allow roaming**               | `Disabled`                 | Determines whether the device can roam between different networks.      |
+| **RX1 Delay**                   | `0` (system default)       | Receive window delay (in seconds) after uplink transmission.            |
+
+## Usage
+
+1. **Create or select** this device profile in ChirpStack.
+2. **Assign** the profile to any devices operating in the EU868 region with LoRaWAN 1.0.3.
+
+---
+
 ### Configuring ChirpStack Device Profiles
 
 To enable **LoRa metrics processing** and **message decoding**, configure **Device Profiles** correctly for each region.
@@ -188,5 +281,94 @@ Repeat for each region with the appropriate value.
 | IN865       | IN865 Profile         | in865           |
 
 ---
+
+### Step 2: Create Gateway in ChirpStack
+
+1. Go to **Gateways > Add Gateway**
+2. Fill in:
+
+| Field           | Value                         |
+|-----------------|-------------------------------|
+| **Gateway ID**  | `a365de9c7bea8e5b` (same as LWN) |
+| **Name**        | `Dev-Gateway-1`               |
+| **Network Server** | (your default server)      |
+
+3. (Optional) Set coordinates or description
+4. Click **Submit**
+
+---
+
+###  Step 3: Create Application
+
+1. Navigate to **Applications**
+2. Click **Add Application**
+3. Set:
+   - **Name**: `simulated-app`
+   - **Service Profile**: Default or custom
+   - Leave **Payload Codec** as `None`
+4. Click **Submit**
+
+---
+
+### Step 4: Add Devices Under Application
+
+1. Open your application → click **Add Device**
+2. Fill in:
+
+| Field          | Value                     |
+|----------------|---------------------------|
+| **Device EUI** | Same as in LWN Simulator  |
+| **Device Name**| `Test-dev-01`             |
+| **Device Profile** | `Device-Profile-EU868` |
+
+3. In the **Keys (OTAA)** tab:
+   - Paste the **AppKey** used in LWN Simulator
+
+4. Click **Submit**
+
+---
+
+## Verifying Operation
+
+- Start the device in **LWN Simulator**
+- Check ChirpStack under:
+  - **Device Data** for application payloads
+  - **Live LoRaWAN Frames**
+  - **Gateways > Last Seen**
+
+Uplink messages from LWN Simulator should now be visible in ChirpStack.
+
+---
+
+# Gateway Bridge Configuration (**EMQX Dashboard (ChirpStack):** http://localhost:18083)
+
+This describes the minimal settings needed to bridge local MQTT messages to a remote MQTT broker.
+
+## Basic Bridge Settings
+
+| Field                   | Value                            | Description                                                   |
+|-------------------------|----------------------------------|---------------------------------------------------------------|
+| **Name**               | `gateway-bridge`                 | A descriptive name for this gateway bridge.                  |
+| **MQTT Broker**         | `fog-nodes_haproxy_1:1883`       | Hostname (or IP) and port of the remote MQTT broker.         |
+| **MQTT Version**        | `v3.1.1`                         | MQTT protocol version.                                       |
+| **Keep Alive**          | `300 (seconds)`                  | Interval at which the client PINGs the broker.               |
+| **Message Retry Interval** | `15 (seconds)`                | Retry interval for message delivery failures.                |
+| **Clean start**         | `Enabled`                        | Clear session state on reconnect.                            |
+| **Enable TLS**          | `Disabled`                       | Toggle TLS if secure connections are required.               |
+| **Bridge Mode**         | `Disabled`                       | Controls dynamic bridging rules (set to your needs).         |
+
+## Egress Setup
+
+| Field           | Value                                         | Description                                                                   |
+|-----------------|-----------------------------------------------|-------------------------------------------------------------------------------|
+| **Egress**      | `Enabled`                                     | Forwards messages from the local broker to the remote broker.                 |
+| **Local Topic** | `application/+/device/+/event/up`            | Topic on the local broker to capture and forward.                             |
+| **Remote Topic**| `region/${payload.regionConfigId}/${topic}`   | Dynamically builds the remote topic using the payload’s `regionConfigId`.     |
+| **QoS**         | `0`                                           | “At most once” delivery.                                                      |
+| **Retain**      | `false`                                       | Do not retain messages on the remote broker.                                  |
+| **Payload**     | `${payload}`                                  | Forwards the entire original message payload.                                 |
+
+---
+
 
 
