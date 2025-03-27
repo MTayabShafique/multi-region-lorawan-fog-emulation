@@ -41,7 +41,7 @@ docker compose up -d
 ### 2. Start Fog Node System
 ```bash
 cd ../fog-nodes
-docker build -t myorg/fog-node:latest ./fog-node
+docker build -t myorg/fog-node:latest .
 docker-compose build
 docker-compose up -d
 ```
@@ -107,13 +107,7 @@ make build
 |------------------|--------------------------------------|
 | ChirpStack       | `chirpstack-docker_lorawan`          |
 | Fog Nodes        | `fog-nodes_fog-netwrok`              |
-| SensIoT + Fog    | `fog-sensiot_network` (must create)  |
 | SensIoT Internal | `the-sensiot-framework_backend`      |
-
-To create the bridge network between SensIoT and Fog Nodes:
-```bash
-docker network create fog-sensiot_network
-```
 
 ---
 
