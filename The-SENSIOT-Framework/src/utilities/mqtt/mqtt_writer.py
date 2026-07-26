@@ -3,6 +3,7 @@ import os
 import threading
 import paho.mqtt.client as mqtt
 import json
+from utilities.mqtt.mqtt_tls import configure_mqtt_tls
 
 # Logger setup
 logger = logging.getLogger("sensiot")
@@ -19,6 +20,11 @@ class MqttWriter(threading.Thread):
         self.port = int(self.config["mqtt"]["port"])
         self.topic_template = "application/{application_id}/device/{device_id}/command/down"
         self.client = mqtt.Client()
+        username = os.getenv("MQTT_USERNAME") or self.config["mqtt"].get("connection", {}).get("username")
+        password = os.getenv("MQTT_PASSWORD") or self.config["mqtt"].get("connection", {}).get("password")
+        if username and password:
+            self.client.username_pw_set(username, password)
+        configure_mqtt_tls(self.client)
 
         logger.info("{} initialized successfully".format(self.name))
 

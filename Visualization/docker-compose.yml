@@ -1,5 +1,3 @@
-version: '3.7'
-
 networks:
   chirpstack-docker_lorawan:
     external: true
@@ -12,18 +10,20 @@ services:
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus_monitor
+    restart: unless-stopped
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/rules:/etc/prometheus/rules:ro
     ports:
-      - "9091:9090"
+      - "127.0.0.1:9091:9090"
     networks:
       - chirpstack-docker_lorawan
       - fog-nodes_fog_network
+      - the-sensiot-framework_backend
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
     container_name: cadvisor
-    ports:
-      - "8082:8080"
+    restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /sys:/sys:ro
@@ -35,8 +35,7 @@ services:
   node-exporter:
     image: prom/node-exporter:latest
     container_name: node_exporter
-    ports:
-      - "9100:9100"
+    restart: unless-stopped
     networks:
       - chirpstack-docker_lorawan
       - fog-nodes_fog_network
@@ -44,15 +43,19 @@ services:
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
+    restart: unless-stopped
     ports:
-      - "3005:3000"
+      - "127.0.0.1:3005:3000"
     volumes:
       - ./grafana-provisioning/provisioning/dashboards:/etc/grafana/provisioning/dashboards
       - ./grafana-provisioning/provisioning/datasources:/etc/grafana/provisioning/datasources
       - ./grafana-provisioning/provisioning/config:/etc/grafana/provisioning/config
       - ./grafana-provisioning/dashboards:/var/lib/grafana/dashboards
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?run setup-security.ps1 first}
+      - LORAWAN_INFLUX_TOKEN=${LORAWAN_INFLUX_TOKEN:?run setup-security.ps1 first}
+      - SENSIOT_INFLUX_TOKEN=${SENSIOT_INFLUX_TOKEN:?run setup-security.ps1 first}
     networks:
       - chirpstack-docker_lorawan
       - fog-nodes_fog_network
+      - the-sensiot-framework_backend

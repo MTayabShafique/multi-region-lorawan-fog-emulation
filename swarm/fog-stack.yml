@@ -1,0 +1,857 @@
+version: "3.8"
+
+x-worker-deploy: &worker-deploy
+  mode: replicated
+  replicas: 2
+  placement:
+    constraints:
+      - node.platform.os == linux
+    preferences:
+      - spread: node.hostname
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    max_attempts: 5
+    window: 60s
+  update_config:
+    parallelism: 1
+    delay: 10s
+    monitor: 30s
+    failure_action: rollback
+    order: start-first
+  rollback_config:
+    parallelism: 1
+    monitor: 30s
+    order: stop-first
+  resources:
+    reservations:
+      cpus: "0.10"
+      memory: 96M
+    limits:
+      cpus: "1.00"
+      memory: 384M
+
+x-emqx-deploy: &emqx-deploy
+  mode: replicated
+  replicas: 1
+  restart_policy:
+    condition: any
+    delay: 10s
+    window: 120s
+  update_config:
+    parallelism: 1
+    monitor: 60s
+    failure_action: rollback
+    order: stop-first
+  resources:
+    reservations:
+      memory: 512M
+    limits:
+      cpus: "2.00"
+      memory: 2G
+
+x-emqx-environment: &emqx-environment
+  EMQX_CLUSTER__DISCOVERY_STRATEGY: static
+  EMQX_CLUSTER__STATIC__SEEDS: emqx@fog-emqx1,emqx@fog-emqx2,emqx@fog-emqx3
+  EMQX_ALLOW_ANONYMOUS: "false"
+
+services:
+  fog-node-eu868:
+    image: ${FOG_IMAGE:-sensiot/fog-node:latest}
+    environment:
+      REGION: eu868
+      MQTT_BROKER: fog-haproxy
+      MQTT_PORT: "8883"
+      MQTT_USERNAME: fog-eu868
+      MQTT_PASSWORD_FILE: /run/secrets/mqtt_password
+      MQTT_TLS_ENABLED: "true"
+      MQTT_TLS_CA: /run/secrets/mqtt_ca
+      MQTT_TLS_CERT: /run/secrets/mqtt_cert
+      MQTT_TLS_KEY: /run/secrets/mqtt_key
+      REDIS_SENTINELS: fog-sentinel1:26379,fog-sentinel2:26379,fog-sentinel3:26379
+      REDIS_MASTER_NAME: sensiot-fog
+      REDIS_PASSWORD_FILE: /run/secrets/redis_password
+      CENTRAL_TOPIC: central/data
+      AGGREGATION_INTERVAL: "300"
+    secrets:
+      - source: fog_eu868_mqtt_password
+        target: mqtt_password
+      - source: fog_redis_password
+        target: redis_password
+      - source: fog_mqtt_ca
+        target: mqtt_ca
+      - source: fog_workers_mqtt_cert
+        target: mqtt_cert
+      - source: fog_workers_mqtt_key
+        target: mqtt_key
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      sensiot_edge:
+        aliases:
+          - fog-node-eu868
+    deploy: *worker-deploy
+
+  fog-node-us915:
+    image: ${FOG_IMAGE:-sensiot/fog-node:latest}
+    environment:
+      REGION: us915_0
+      MQTT_BROKER: fog-haproxy
+      MQTT_PORT: "8883"
+      MQTT_USERNAME: fog-us915
+      MQTT_PASSWORD_FILE: /run/secrets/mqtt_password
+      MQTT_TLS_ENABLED: "true"
+      MQTT_TLS_CA: /run/secrets/mqtt_ca
+      MQTT_TLS_CERT: /run/secrets/mqtt_cert
+      MQTT_TLS_KEY: /run/secrets/mqtt_key
+      REDIS_SENTINELS: fog-sentinel1:26379,fog-sentinel2:26379,fog-sentinel3:26379
+      REDIS_MASTER_NAME: sensiot-fog
+      REDIS_PASSWORD_FILE: /run/secrets/redis_password
+      CENTRAL_TOPIC: central/data
+      AGGREGATION_INTERVAL: "300"
+    secrets:
+      - source: fog_us915_mqtt_password
+        target: mqtt_password
+      - source: fog_redis_password
+        target: redis_password
+      - source: fog_mqtt_ca
+        target: mqtt_ca
+      - source: fog_workers_mqtt_cert
+        target: mqtt_cert
+      - source: fog_workers_mqtt_key
+        target: mqtt_key
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      sensiot_edge:
+        aliases:
+          - fog-node-us915
+    deploy: *worker-deploy
+
+  fog-node-in865:
+    image: ${FOG_IMAGE:-sensiot/fog-node:latest}
+    environment:
+      REGION: in865
+      MQTT_BROKER: fog-haproxy
+      MQTT_PORT: "8883"
+      MQTT_USERNAME: fog-in865
+      MQTT_PASSWORD_FILE: /run/secrets/mqtt_password
+      MQTT_TLS_ENABLED: "true"
+      MQTT_TLS_CA: /run/secrets/mqtt_ca
+      MQTT_TLS_CERT: /run/secrets/mqtt_cert
+      MQTT_TLS_KEY: /run/secrets/mqtt_key
+      REDIS_SENTINELS: fog-sentinel1:26379,fog-sentinel2:26379,fog-sentinel3:26379
+      REDIS_MASTER_NAME: sensiot-fog
+      REDIS_PASSWORD_FILE: /run/secrets/redis_password
+      CENTRAL_TOPIC: central/data
+      AGGREGATION_INTERVAL: "300"
+    secrets:
+      - source: fog_in865_mqtt_password
+        target: mqtt_password
+      - source: fog_redis_password
+        target: redis_password
+      - source: fog_mqtt_ca
+        target: mqtt_ca
+      - source: fog_workers_mqtt_cert
+        target: mqtt_cert
+      - source: fog_workers_mqtt_key
+        target: mqtt_key
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      sensiot_edge:
+        aliases:
+          - fog-node-in865
+    deploy: *worker-deploy
+
+  fog-node-ru864:
+    image: ${FOG_IMAGE:-sensiot/fog-node:latest}
+    environment:
+      REGION: ru864
+      MQTT_BROKER: fog-haproxy
+      MQTT_PORT: "8883"
+      MQTT_USERNAME: fog-ru864
+      MQTT_PASSWORD_FILE: /run/secrets/mqtt_password
+      MQTT_TLS_ENABLED: "true"
+      MQTT_TLS_CA: /run/secrets/mqtt_ca
+      MQTT_TLS_CERT: /run/secrets/mqtt_cert
+      MQTT_TLS_KEY: /run/secrets/mqtt_key
+      REDIS_SENTINELS: fog-sentinel1:26379,fog-sentinel2:26379,fog-sentinel3:26379
+      REDIS_MASTER_NAME: sensiot-fog
+      REDIS_PASSWORD_FILE: /run/secrets/redis_password
+      CENTRAL_TOPIC: central/data
+      AGGREGATION_INTERVAL: "300"
+    secrets:
+      - source: fog_ru864_mqtt_password
+        target: mqtt_password
+      - source: fog_redis_password
+        target: redis_password
+      - source: fog_mqtt_ca
+        target: mqtt_ca
+      - source: fog_workers_mqtt_cert
+        target: mqtt_cert
+      - source: fog_workers_mqtt_key
+        target: mqtt_key
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      sensiot_edge:
+        aliases:
+          - fog-node-ru864
+    deploy: *worker-deploy
+
+  fog-redis1:
+    image: redis:7.4-alpine
+    user: "999:1000"
+    entrypoint: ["/bin/sh", "/opt/sensiot/redis-entrypoint.sh"]
+    environment:
+      REDIS_INITIAL_ROLE: master
+      REDIS_ANNOUNCE_HOST: fog-redis1
+    configs:
+      - source: fog_redis_entrypoint
+        target: /opt/sensiot/redis-entrypoint.sh
+    secrets:
+      - source: fog_redis_password
+        target: redis_password
+    volumes:
+      - fog_state_data:/data
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - sensiot_edge
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - REDISCLI_AUTH="$$(cat /run/secrets/redis_password)" redis-cli ping | grep PONG
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.sensiot_redis_slot == 1
+      restart_policy:
+        condition: any
+        delay: 5s
+      update_config:
+        failure_action: rollback
+        order: stop-first
+      resources:
+        reservations:
+          memory: 128M
+        limits:
+          cpus: "1.00"
+          memory: 512M
+      endpoint_mode: dnsrr
+
+  fog-redis2:
+    image: redis:7.4-alpine
+    user: "999:1000"
+    entrypoint: ["/bin/sh", "/opt/sensiot/redis-entrypoint.sh"]
+    environment:
+      REDIS_INITIAL_ROLE: replica
+      REDIS_INITIAL_MASTER_HOST: fog-redis1
+      REDIS_ANNOUNCE_HOST: fog-redis2
+    configs:
+      - source: fog_redis_entrypoint
+        target: /opt/sensiot/redis-entrypoint.sh
+    secrets:
+      - source: fog_redis_password
+        target: redis_password
+    volumes:
+      - fog_redis2_data:/data
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    networks:
+      - sensiot_edge
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - REDISCLI_AUTH="$$(cat /run/secrets/redis_password)" redis-cli ping | grep PONG
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.sensiot_redis_slot == 2
+      restart_policy:
+        condition: any
+        delay: 5s
+      update_config:
+        failure_action: rollback
+        order: stop-first
+      resources:
+        reservations:
+          memory: 128M
+        limits:
+          cpus: "1.00"
+          memory: 512M
+      endpoint_mode: dnsrr
+
+  fog-redis3:
+    image: redis:7.4-alpine
+    user: "999:1000"
+    entrypoint: ["/bin/sh", "/opt/sensiot/redis-entrypoint.sh"]
+    environment:
+      REDIS_INITIAL_ROLE: replica
+      REDIS_INITIAL_MASTER_HOST: fog-redis1
+      REDIS_ANNOUNCE_HOST: fog-redis3
+    configs:
+      - source: fog_redis_entrypoint
+        target: /opt/sensiot/redis-entrypoint.sh
+    secrets:
+      - source: fog_redis_password
+        target: redis_password
+    volumes:
+      - fog_redis3_data:/data
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    networks:
+      - sensiot_edge
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - REDISCLI_AUTH="$$(cat /run/secrets/redis_password)" redis-cli ping | grep PONG
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.sensiot_redis_slot == 3
+      restart_policy:
+        condition: any
+        delay: 5s
+      update_config:
+        failure_action: rollback
+        order: stop-first
+      resources:
+        reservations:
+          memory: 128M
+        limits:
+          cpus: "1.00"
+          memory: 512M
+      endpoint_mode: dnsrr
+
+  fog-sentinel1:
+    image: redis:7.4-alpine
+    user: "999:1000"
+    entrypoint: ["/bin/sh", "/opt/sensiot/sentinel-entrypoint.sh"]
+    environment:
+      SENTINEL_ANNOUNCE_HOST: fog-sentinel1
+    configs:
+      - source: fog_redis_sentinel_entrypoint
+        target: /opt/sensiot/sentinel-entrypoint.sh
+    secrets:
+      - source: fog_redis_password
+        target: redis_password
+    volumes:
+      - fog_sentinel1_data:/data
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    networks:
+      - sensiot_edge
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - REDISCLI_AUTH="$$(cat /run/secrets/redis_password)" redis-cli -p 26379 SENTINEL ckquorum sensiot-fog | grep OK
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.sensiot_redis_slot == 1
+      restart_policy:
+        condition: any
+        delay: 5s
+      update_config:
+        failure_action: rollback
+        order: stop-first
+      resources:
+        reservations:
+          memory: 32M
+        limits:
+          cpus: "0.50"
+          memory: 128M
+      endpoint_mode: dnsrr
+
+  fog-sentinel2:
+    image: redis:7.4-alpine
+    user: "999:1000"
+    entrypoint: ["/bin/sh", "/opt/sensiot/sentinel-entrypoint.sh"]
+    environment:
+      SENTINEL_ANNOUNCE_HOST: fog-sentinel2
+    configs:
+      - source: fog_redis_sentinel_entrypoint
+        target: /opt/sensiot/sentinel-entrypoint.sh
+    secrets:
+      - source: fog_redis_password
+        target: redis_password
+    volumes:
+      - fog_sentinel2_data:/data
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    networks:
+      - sensiot_edge
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - REDISCLI_AUTH="$$(cat /run/secrets/redis_password)" redis-cli -p 26379 SENTINEL ckquorum sensiot-fog | grep OK
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.sensiot_redis_slot == 2
+      restart_policy:
+        condition: any
+        delay: 5s
+      update_config:
+        failure_action: rollback
+        order: stop-first
+      resources:
+        reservations:
+          memory: 32M
+        limits:
+          cpus: "0.50"
+          memory: 128M
+      endpoint_mode: dnsrr
+
+  fog-sentinel3:
+    image: redis:7.4-alpine
+    user: "999:1000"
+    entrypoint: ["/bin/sh", "/opt/sensiot/sentinel-entrypoint.sh"]
+    environment:
+      SENTINEL_ANNOUNCE_HOST: fog-sentinel3
+    configs:
+      - source: fog_redis_sentinel_entrypoint
+        target: /opt/sensiot/sentinel-entrypoint.sh
+    secrets:
+      - source: fog_redis_password
+        target: redis_password
+    volumes:
+      - fog_sentinel3_data:/data
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    networks:
+      - sensiot_edge
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - REDISCLI_AUTH="$$(cat /run/secrets/redis_password)" redis-cli -p 26379 SENTINEL ckquorum sensiot-fog | grep OK
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.sensiot_redis_slot == 3
+      restart_policy:
+        condition: any
+        delay: 5s
+      update_config:
+        failure_action: rollback
+        order: stop-first
+      resources:
+        reservations:
+          memory: 32M
+        limits:
+          cpus: "0.50"
+          memory: 128M
+      endpoint_mode: dnsrr
+
+  fog-emqx1:
+    image: emqx:5.0
+    hostname: fog-emqx1
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        export EMQX_NODE__COOKIE="$$(cat /run/secrets/emqx_cookie)";
+        exec /usr/bin/docker-entrypoint.sh /opt/emqx/bin/emqx foreground
+    environment:
+      <<: *emqx-environment
+      EMQX_NODE__NAME: emqx@fog-emqx1
+    secrets:
+      - source: fog_emqx_cookie
+        target: emqx_cookie
+      - source: fog_mqtt_ca
+        target: /opt/emqx/etc/certs/ca.crt
+      - source: fog_server_mqtt_cert
+        target: /opt/emqx/etc/certs/server.crt
+      - source: fog_server_mqtt_key
+        target: /opt/emqx/etc/certs/server.key
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    configs:
+      - source: fog_emqx_config
+        target: /opt/emqx/etc/emqx.conf
+      - source: fog_emqx_acl
+        target: /opt/emqx/etc/acl.conf
+    volumes:
+      - fog_emqx1_data:/opt/emqx/data
+    networks:
+      sensiot_edge:
+        aliases:
+          - fog-emqx1
+    healthcheck:
+      test: ["CMD", "/opt/emqx/bin/emqx_ctl", "status"]
+      interval: 10s
+      timeout: 25s
+      retries: 5
+      start_period: 30s
+    deploy:
+      <<: *emqx-deploy
+      placement:
+        constraints:
+          - node.labels.sensiot_emqx_slot == 1
+      endpoint_mode: dnsrr
+
+  fog-emqx2:
+    image: emqx:5.0
+    hostname: fog-emqx2
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        export EMQX_NODE__COOKIE="$$(cat /run/secrets/emqx_cookie)";
+        exec /usr/bin/docker-entrypoint.sh /opt/emqx/bin/emqx foreground
+    environment:
+      <<: *emqx-environment
+      EMQX_NODE__NAME: emqx@fog-emqx2
+    secrets:
+      - source: fog_emqx_cookie
+        target: emqx_cookie
+      - source: fog_mqtt_ca
+        target: /opt/emqx/etc/certs/ca.crt
+      - source: fog_server_mqtt_cert
+        target: /opt/emqx/etc/certs/server.crt
+      - source: fog_server_mqtt_key
+        target: /opt/emqx/etc/certs/server.key
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    configs:
+      - source: fog_emqx_config
+        target: /opt/emqx/etc/emqx.conf
+      - source: fog_emqx_acl
+        target: /opt/emqx/etc/acl.conf
+    volumes:
+      - fog_emqx2_data:/opt/emqx/data
+    networks:
+      sensiot_edge:
+        aliases:
+          - fog-emqx2
+    healthcheck:
+      test: ["CMD", "/opt/emqx/bin/emqx_ctl", "status"]
+      interval: 10s
+      timeout: 25s
+      retries: 5
+      start_period: 30s
+    deploy:
+      <<: *emqx-deploy
+      placement:
+        constraints:
+          - node.labels.sensiot_emqx_slot == 2
+      endpoint_mode: dnsrr
+
+  fog-emqx3:
+    image: emqx:5.0
+    hostname: fog-emqx3
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        export EMQX_NODE__COOKIE="$$(cat /run/secrets/emqx_cookie)";
+        exec /usr/bin/docker-entrypoint.sh /opt/emqx/bin/emqx foreground
+    environment:
+      <<: *emqx-environment
+      EMQX_NODE__NAME: emqx@fog-emqx3
+    secrets:
+      - source: fog_emqx_cookie
+        target: emqx_cookie
+      - source: fog_mqtt_ca
+        target: /opt/emqx/etc/certs/ca.crt
+      - source: fog_server_mqtt_cert
+        target: /opt/emqx/etc/certs/server.crt
+      - source: fog_server_mqtt_key
+        target: /opt/emqx/etc/certs/server.key
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    configs:
+      - source: fog_emqx_config
+        target: /opt/emqx/etc/emqx.conf
+      - source: fog_emqx_acl
+        target: /opt/emqx/etc/acl.conf
+    volumes:
+      - fog_emqx3_data:/opt/emqx/data
+    networks:
+      sensiot_edge:
+        aliases:
+          - fog-emqx3
+    healthcheck:
+      test: ["CMD", "/opt/emqx/bin/emqx_ctl", "status"]
+      interval: 10s
+      timeout: 25s
+      retries: 5
+      start_period: 30s
+    deploy:
+      <<: *emqx-deploy
+      placement:
+        constraints:
+          - node.labels.sensiot_emqx_slot == 3
+      endpoint_mode: dnsrr
+
+  fog-haproxy:
+    image: haproxy:2.6
+    configs:
+      - source: fog_haproxy_config
+        target: /usr/local/etc/haproxy/haproxy.cfg
+    networks:
+      sensiot_edge:
+        aliases:
+          - fog-haproxy
+    ports:
+      - target: 8883
+        published: 2883
+        protocol: tcp
+        mode: host
+      - target: 18083
+        published: 18084
+        protocol: tcp
+        mode: host
+    healthcheck:
+      test: ["CMD", "haproxy", "-c", "-f", "/usr/local/etc/haproxy/haproxy.cfg"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    read_only: true
+    tmpfs:
+      - /var/lib/haproxy
+      - /run
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      replicas: 2
+      placement:
+        constraints:
+          - node.labels.sensiot_ingress == true
+        max_replicas_per_node: 1
+        preferences:
+          - spread: node.hostname
+      restart_policy:
+        condition: any
+        delay: 5s
+      update_config:
+        parallelism: 1
+        monitor: 30s
+        failure_action: rollback
+        order: stop-first
+      resources:
+        reservations:
+          memory: 32M
+        limits:
+          cpus: "0.50"
+          memory: 128M
+
+  docker-socket-proxy:
+    image: tecnativa/docker-socket-proxy:v0.4.2
+    environment:
+      SERVICES: "1"
+      POST: "1"
+      LOG_LEVEL: warning
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - autoscaler_control
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+          - node.platform.os == linux
+      restart_policy:
+        condition: any
+        delay: 5s
+      update_config:
+        failure_action: rollback
+        order: stop-first
+      resources:
+        reservations:
+          memory: 16M
+        limits:
+          cpus: "0.25"
+          memory: 64M
+
+  fog-autoscaler:
+    image: ${AUTOSCALER_IMAGE:-sensiot/fog-autoscaler:latest}
+    environment:
+      STACK_NAME: ${STACK_NAME:-sensiot-fog}
+      PROMETHEUS_URL: ${PROMETHEUS_URL:-http://prometheus:9090}
+      DOCKER_API_URL: http://docker-socket-proxy:2375
+      AUTOSCALER_DRY_RUN: ${AUTOSCALER_DRY_RUN:-true}
+      EVALUATION_INTERVAL_SECONDS: ${EVALUATION_INTERVAL_SECONDS:-30}
+      RATE_WINDOW: ${RATE_WINDOW:-2m}
+      MIN_REPLICAS: ${MIN_REPLICAS:-2}
+      MAX_REPLICAS: ${MAX_REPLICAS:-8}
+      TARGET_MESSAGES_PER_SECOND_PER_REPLICA: ${TARGET_MESSAGES_PER_SECOND_PER_REPLICA:-20}
+      BACKLOG_SCALE_UP_THRESHOLD: ${BACKLOG_SCALE_UP_THRESHOLD:-10}
+      SCALE_UP_PERIODS: ${SCALE_UP_PERIODS:-2}
+      SCALE_DOWN_PERIODS: ${SCALE_DOWN_PERIODS:-5}
+      COOLDOWN_SECONDS: ${COOLDOWN_SECONDS:-120}
+    networks:
+      sensiot_edge:
+        aliases:
+          - fog-autoscaler
+      autoscaler_control:
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+          - node.platform.os == linux
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 5
+        window: 60s
+      update_config:
+        parallelism: 1
+        monitor: 30s
+        failure_action: rollback
+        order: start-first
+      resources:
+        reservations:
+          cpus: "0.05"
+          memory: 48M
+        limits:
+          cpus: "0.50"
+          memory: 128M
+
+networks:
+  sensiot_edge:
+    external: true
+    name: sensiot-edge
+  autoscaler_control:
+    driver: overlay
+    internal: true
+    attachable: false
+    driver_opts:
+      encrypted: ""
+
+volumes:
+  fog_state_data:
+  fog_redis2_data:
+  fog_redis3_data:
+  fog_sentinel1_data:
+  fog_sentinel2_data:
+  fog_sentinel3_data:
+  fog_emqx1_data:
+  fog_emqx2_data:
+  fog_emqx3_data:
+
+configs:
+  fog_emqx_config:
+    name: sensiot_fog_emqx_config_${FOG_CONFIG_VERSION:-v1}
+    file: ../fog-nodes/config/emqx/emqx.conf
+  fog_emqx_acl:
+    name: sensiot_fog_emqx_acl_${FOG_CONFIG_VERSION:-v1}
+    file: ../fog-nodes/config/emqx/acl.conf
+  fog_haproxy_config:
+    name: sensiot_fog_haproxy_config_${FOG_CONFIG_VERSION:-v1}
+    file: ./config/fog-haproxy.cfg
+  fog_redis_entrypoint:
+    name: sensiot_fog_redis_entrypoint_${FOG_CONFIG_VERSION:-v1}
+    file: ../fog-nodes/config/redis/redis-entrypoint.sh
+  fog_redis_sentinel_entrypoint:
+    name: sensiot_fog_redis_sentinel_entrypoint_${FOG_CONFIG_VERSION:-v1}
+    file: ../fog-nodes/config/redis/sentinel-entrypoint.sh
+
+secrets:
+  fog_emqx_cookie:
+    external: true
+    name: sensiot_fog_emqx_cookie
+  fog_eu868_mqtt_password:
+    external: true
+    name: sensiot_fog_eu868_mqtt_password
+  fog_us915_mqtt_password:
+    external: true
+    name: sensiot_fog_us915_mqtt_password
+  fog_in865_mqtt_password:
+    external: true
+    name: sensiot_fog_in865_mqtt_password
+  fog_ru864_mqtt_password:
+    external: true
+    name: sensiot_fog_ru864_mqtt_password
+  fog_redis_password:
+    external: true
+    name: sensiot_fog_redis_password
+  fog_mqtt_ca:
+    external: true
+    name: sensiot_fog_mqtt_ca_${FOG_TLS_VERSION}
+  fog_server_mqtt_cert:
+    external: true
+    name: sensiot_fog_server_mqtt_cert_${FOG_TLS_VERSION}
+  fog_server_mqtt_key:
+    external: true
+    name: sensiot_fog_server_mqtt_key_${FOG_TLS_VERSION}
+  fog_workers_mqtt_cert:
+    external: true
+    name: sensiot_fog_workers_mqtt_cert_${FOG_TLS_VERSION}
+  fog_workers_mqtt_key:
+    external: true
+    name: sensiot_fog_workers_mqtt_key_${FOG_TLS_VERSION}

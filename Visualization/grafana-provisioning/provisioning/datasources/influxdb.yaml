@@ -11,4 +11,4 @@ datasources:
       tlsSkipVerify: true
       httpMode: POST
     secureJsonData:
-      token: "Di7npyTp8jcmLkQl_CingHPy41y_UJjtYDe4XN1UCoFmBovy4xwhtjGa-Bt_Ng7G8x24HIsNxwH7Rv9owX1-jw=="
+      token: $LORAWAN_INFLUX_TOKEN

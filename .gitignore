@@ -1,0 +1,11 @@
+/.idea
+__pycache__/
+.venv
+.venv-win/
+LoRaWAN Simulator/runtime/
+**/.env
+**/auth-built-in-db-bootstrap.csv
+!.env.example
+!**/.env.example
+/tls/generated/
+/chirpstack-docker/configuration/chirpstack/mqtt-certs/

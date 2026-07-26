@@ -1,10 +1,6 @@
-import json
 import logging
-from statistics import mean
-from datetime import datetime
 from utils import is_valid_payload
 from metrics import dropped_counter, events_detected_counter
-from aggregator import update_aggregator
 from collections import defaultdict
 
 logger = logging.getLogger(__name__)
@@ -12,10 +8,15 @@ logger = logging.getLogger(__name__)
 # Local in-memory counter for dropped messages in processing (keyed by region)
 local_dropped_counter_processing = defaultdict(int)
 
-def process_message(payload, topic):
+def _normalize_region(region):
+    return str(region or "").strip().lower()
+
+
+def process_message(payload, topic, expected_region, aggregation_store):
     """
     Process inner payload:
       - Validate sensor data.
+      - Enforce region ownership.
       - Extract device information.
       - Aggregate sensor data.
       - Detect events.
@@ -28,10 +29,21 @@ def process_message(payload, topic):
     device_id = device_info.get("devEui", "unknown")
     device_name = device_info.get("deviceName", "unknown")
     region_from_config = payload.get("regionConfigId", "unknown")
+    expected_region = _normalize_region(expected_region)
+    normalized_payload_region = _normalize_region(region_from_config)
+
+    if normalized_payload_region != expected_region:
+        logger.warning(
+            f"[{expected_region}] Dropping payload with unexpected regionConfigId={region_from_config} "
+            f"from topic={topic}"
+        )
+        dropped_counter.labels(region=expected_region, device_id=device_id).inc()
+        local_dropped_counter_processing[expected_region] += 1
+        return
 
     # Validate payload; if invalid, update dropped counters
     if not is_valid_payload(payload):
-        logger.warning(f"Dropping invalid payload: {payload}")
+        logger.warning(f"[{expected_region}] Dropping invalid payload from device_id={device_id}")
         dropped_counter.labels(region=region_from_config, device_id=device_id).inc()
         local_dropped_counter_processing[region_from_config] += 1
         logger.info(f"[{region_from_config}] Local dropped count in process_message: {local_dropped_counter_processing[region_from_config]}")
@@ -55,6 +67,18 @@ def process_message(payload, topic):
         events_detected_counter.labels(region=region_from_config, device_id=device_id).inc()
         logger.info(f"Event detected for sensor {device_name} (ID: {device_id}): {sensor_data}")
 
-    # Update aggregator for this device
-    update_aggregator(device_id, device_name, region_from_config, temperature, humidity, event_detected)
-
+    reading_id = payload.get("deduplicationId")
+    accepted = aggregation_store.update(
+        device_id,
+        device_name,
+        region_from_config,
+        temperature,
+        humidity,
+        event_detected,
+        reading_id=reading_id,
+    )
+    if not accepted:
+        logger.info(
+            f"[{region_from_config}] Ignored duplicate reading "
+            f"deduplicationId={reading_id} for device_id={device_id}"
+        )

@@ -1,0 +1,26 @@
+groups:
+  - name: fog-autoscaling
+    interval: 15s
+    rules:
+      - record: fog:received_messages_per_second:sum_by_region
+        expr: sum by (region) (rate(received_messages_total[2m]))
+
+      - record: fog:outbox_messages:max_by_region
+        expr: max by (region) (fog_outbox_messages)
+
+      - alert: FogAutoscalerErrors
+        expr: increase(fog_autoscaler_errors_total[5m]) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: Fog autoscaler encountered errors
+          description: The autoscaler reported an API or metrics error for region {{ $labels.region }}.
+
+      - alert: FogOutboxBacklog
+        expr: fog:outbox_messages:max_by_region > 10
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: Fog publish outbox is accumulating
+          description: Region {{ $labels.region }} has a sustained durable outbox backlog.

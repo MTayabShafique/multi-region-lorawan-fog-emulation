@@ -5,7 +5,7 @@ from influxdb_client import InfluxDBClient, Point, WriteOptions
 
 # Environment variables for InfluxDB 2.x
 INFLUX_URL = os.getenv("INFLUX_URL", "http://influxdb:8086")
-INFLUX_TOKEN = os.getenv("INFLUX_TOKEN", "my-super-secret-token")
+INFLUX_TOKEN = os.getenv("INFLUX_TOKEN")
 INFLUX_ORG = os.getenv("INFLUX_ORG", "lorawan_org")
 INFLUX_BUCKET = os.getenv("INFLUX_BUCKET", "lorawan_bucket")
 

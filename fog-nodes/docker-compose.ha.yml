@@ -1,0 +1,16 @@
+services:
+  fog-node-us915:
+    deploy:
+      replicas: 2
+
+  fog-node-eu868:
+    deploy:
+      replicas: 2
+
+  fog-node-ru864:
+    deploy:
+      replicas: 2
+
+  fog-node-in865:
+    deploy:
+      replicas: 2

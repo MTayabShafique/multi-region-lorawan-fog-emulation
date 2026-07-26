@@ -1,4 +1,7 @@
 from flask_restful import Resource
+import logging
+
+logger = logging.getLogger("sensiot")
 
 class SensorData(Resource):
     def __init__(self, memcache_client):
@@ -14,4 +17,5 @@ class SensorData(Resource):
             else:
                 return {"status": "error", "message": "Data not found"}, 404
         except Exception as e:
-            return {"status": "error", "message": str(e)}, 500
+            logger.error("Failed to read sensor data: %s", e)
+            return {"status": "error", "message": "Internal server error"}, 500

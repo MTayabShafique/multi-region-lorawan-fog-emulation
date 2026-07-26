@@ -29,7 +29,6 @@ class Manager:
         self.event = threading.Event()
         self.__register_signals()
         logger.info("Main program for {} initialized successfully".format(service_type))
-        print("Loaded configuration:", self.config)
 
     def __register_signals(self):
         signal.signal(signal.SIGHUP, self.__handle_signals)
@@ -57,7 +56,7 @@ class Manager:
             t.start()
             logger.info("{} started".format(t.name))
 
-    def __terminate_threads(self):
+    def __terminate_threads(self, exit_process=True):
         logger.info("Terminating...")
         self.event.set()
         start = datetime.datetime.now()
@@ -74,11 +73,12 @@ class Manager:
                 logger.error("Unable to join all threads after {} attempts...exiting!".format(counter))
                 break
         logger.info("Duration till exit: {}".format(str(datetime.datetime.now() - start)))
-        sys.exit(0)
+        if exit_process:
+            sys.exit(0)
 
     def __restart(self):
         logger.info("Restarting {}...".format(self.service_type))
-        self.__terminate_threads()
+        self.__terminate_threads(exit_process=False)
         self.event.clear()
         self.threads = []
         self.__create_threads()

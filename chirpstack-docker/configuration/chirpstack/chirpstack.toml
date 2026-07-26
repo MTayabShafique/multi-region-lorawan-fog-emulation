@@ -18,7 +18,7 @@
   #  * disable - Do not use TLS
   #  * prefer - Attempt to connect with TLS but allow sessions without
   #  * require - Require the use of TLS
-  dsn="postgres://chirpstack:chirpstack@$POSTGRESQL_HOST/chirpstack?sslmode=disable"
+  dsn="postgres://chirpstack:$POSTGRESQL_PASSWORD@$POSTGRESQL_HOST/chirpstack?sslmode=disable"
 
   # Max open connections.
   #
@@ -84,19 +84,29 @@
   # is never exposed. Changing this secret will invalidate all login and API
   # tokens. The following command can be used to generate a random secret:
   #   openssl rand -base64 32
-  secret="you-must-replace-this"
+  secret="$CHIRPSTACK_API_SECRET"
 
 [integration]
   enabled=["mqtt"]
 
   [integration.mqtt]
-    server="tcp://haproxy:1883/"
+    server="ssl://chirpstack-haproxy:8883/"
+    username="$CHIRPSTACK_MQTT_USERNAME"
+    password="$CHIRPSTACK_MQTT_PASSWORD"
+    ca_cert="/etc/chirpstack/mqtt-certs/ca.crt"
+    tls_cert="/etc/chirpstack/mqtt-certs/client.crt"
+    tls_key="/etc/chirpstack/mqtt-certs/client.key"
     json=true
 
 
 # EMQX specific optimizations
 [network_server.gateway.backend.mqtt]
-server = "tcp://haproxy:1883"
+server = "ssl://chirpstack-haproxy:8883"
+username = "$CHIRPSTACK_MQTT_USERNAME"
+password = "$CHIRPSTACK_MQTT_PASSWORD"
+ca_cert = "/etc/chirpstack/mqtt-certs/ca.crt"
+tls_cert = "/etc/chirpstack/mqtt-certs/client.crt"
+tls_key = "/etc/chirpstack/mqtt-certs/client.key"
 qos = 0
 clean_session = true
 keep_alive_interval = "60s"

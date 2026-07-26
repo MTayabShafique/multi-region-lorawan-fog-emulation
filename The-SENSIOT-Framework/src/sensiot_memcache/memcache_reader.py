@@ -21,7 +21,7 @@ class MemcacheReader(threading.Thread):
         self.memcache_port = int(self.config.get("port", 11211))
 
         # Memcache Client
-        self.memcache_client = memcache.Client([f"{self.memcache_host}:{self.memcache_port}"], debug=True)
+        self.memcache_client = memcache.Client([f"{self.memcache_host}:{self.memcache_port}"], debug=False)
 
         logger.info(
             f"{self.name} initialized successfully. Connecting to Memcached at {self.memcache_host}:{self.memcache_port}")

@@ -1,5 +1,5 @@
-# Base image for SensIoT
-FROM alpine:latest
+# Pin Python so native dependencies continue to receive compatible wheels.
+FROM python:3.12-alpine
 
 # Set environment variables for the virtual environment
 ENV VIRTUAL_ENV=/opt/venv
@@ -12,8 +12,7 @@ WORKDIR /app
 COPY requirements.txt /app/requirements.txt
 
 # Install required dependencies and Python packages
-RUN apk add -U --no-cache python3 py3-pip py3-gevent py3-flask py3-paho-mqtt py3-certifi && \
-    apk add -U --virtual build-dependencies python3-dev gcc linux-headers musl-dev file && \
+RUN apk add --no-cache --virtual build-dependencies gcc linux-headers musl-dev && \
     python3 -m venv $VIRTUAL_ENV && \
     $VIRTUAL_ENV/bin/pip install --no-cache-dir -r requirements.txt && \
     apk del build-dependencies
@@ -23,6 +22,12 @@ COPY src /app/
 
 # Make the main script executable
 RUN chmod +x /app/manager.py
+
+RUN addgroup -g 10001 sensiot && \
+    adduser -D -H -u 10001 -G sensiot sensiot && \
+    chown -R sensiot:sensiot /app /opt/venv
+
+USER 10001:10001
 
 # Set the entry point for the container
 ENTRYPOINT ["/app/manager.py"]

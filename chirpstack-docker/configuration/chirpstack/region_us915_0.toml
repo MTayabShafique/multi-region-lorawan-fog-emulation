@@ -38,13 +38,13 @@
         topic_prefix="us915_0"
 
         # MQTT server (e.g. scheme://host:port where scheme is tcp, ssl or ws)
-        server="tcp://haproxy:1883"
+        server="ssl://chirpstack-haproxy:8883"
 
         # Connect with the given username (optional)
-        username=""
+        username="$CHIRPSTACK_MQTT_USERNAME"
 
         # Connect with the given password (optional)
-        password=""
+        password="$CHIRPSTACK_MQTT_PASSWORD"
 
         # Quality of service level
         #
@@ -81,13 +81,13 @@
         # Use this when setting up a secure connection (when server uses ssl://...)
         # but the certificate used by the server is not trusted by any CA certificate
         # on the server (e.g. when self generated).
-        ca_cert=""
+        ca_cert="/etc/chirpstack/mqtt-certs/ca.crt"
 
         # TLS certificate file (optional)
-        tls_cert=""
+        tls_cert="/etc/chirpstack/mqtt-certs/client.crt"
 
         # TLS key file (optional)
-        tls_key=""
+        tls_key="/etc/chirpstack/mqtt-certs/client.key"
 
 
     # Gateway channel configuration.

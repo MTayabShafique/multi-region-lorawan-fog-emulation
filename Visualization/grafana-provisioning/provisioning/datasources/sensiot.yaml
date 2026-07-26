@@ -1,0 +1,20 @@
+apiVersion: 1
+datasources:
+  - name: SensIoT InfluxDB
+    type: influxdb
+    access: proxy
+    url: http://sensiot_influxdb:8086
+    editable: false
+    jsonData:
+      version: Flux
+      organization: "sensiot_org"
+      defaultBucket: "sensiot"
+      tlsSkipVerify: true
+      httpMode: POST
+    secureJsonData:
+      token: $SENSIOT_INFLUX_TOKEN
+  - name: SensIoT Prometheus
+    type: prometheus
+    access: proxy
+    url: http://sensiot_prometheus:9090
+    editable: false
