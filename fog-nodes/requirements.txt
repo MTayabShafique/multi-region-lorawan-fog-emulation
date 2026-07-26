@@ -1,3 +1,4 @@
 paho-mqtt
 requests
 prometheus_client
+redis>=5.0,<6

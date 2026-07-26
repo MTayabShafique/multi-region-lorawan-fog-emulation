@@ -1,9 +1,13 @@
-version: '3.7'
-
 volumes:
   emqx1_data:
   emqx2_data:
   emqx3_data:
+  fog_state_data:
+  fog_redis2_data:
+  fog_redis3_data:
+  fog_sentinel1_data:
+  fog_sentinel2_data:
+  fog_sentinel3_data:
 
 services:
   #############################################################################
@@ -14,6 +18,27 @@ services:
     restart: always
     env_file:
       - ./config/config-us915.env
+    environment:
+      MQTT_USERNAME: fog-us915
+      MQTT_PASSWORD: ${FOG_US915_MQTT_PASSWORD:?run setup-security.ps1 first}
+      REDIS_SENTINELS: fog-sentinel1:26379,fog-sentinel2:26379,fog-sentinel3:26379
+      REDIS_MASTER_NAME: sensiot-fog
+      REDIS_PASSWORD: ${FOG_REDIS_PASSWORD:?run setup-security.ps1 first}
+      MQTT_TLS_ENABLED: "true"
+      MQTT_TLS_CA: /run/mqtt-certs/ca.crt
+      MQTT_TLS_CERT: /run/mqtt-certs/client.crt
+      MQTT_TLS_KEY: /run/mqtt-certs/client.key
+    volumes:
+      - ../tls/generated/ca/ca.crt:/run/mqtt-certs/ca.crt:ro
+      - ../tls/generated/fog-workers/fog-workers.crt:/run/mqtt-certs/client.crt:ro
+      - ../tls/generated/fog-workers/fog-workers.key:/run/mqtt-certs/client.key:ro
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    depends_on:
+      fog-sentinel1:
+        condition: service_healthy
     networks:
       - fog_network
       - chirpstack-docker_lorawan
@@ -26,6 +51,27 @@ services:
     restart: always
     env_file:
       - ./config/config-eu868.env
+    environment:
+      MQTT_USERNAME: fog-eu868
+      MQTT_PASSWORD: ${FOG_EU868_MQTT_PASSWORD:?run setup-security.ps1 first}
+      REDIS_SENTINELS: fog-sentinel1:26379,fog-sentinel2:26379,fog-sentinel3:26379
+      REDIS_MASTER_NAME: sensiot-fog
+      REDIS_PASSWORD: ${FOG_REDIS_PASSWORD:?run setup-security.ps1 first}
+      MQTT_TLS_ENABLED: "true"
+      MQTT_TLS_CA: /run/mqtt-certs/ca.crt
+      MQTT_TLS_CERT: /run/mqtt-certs/client.crt
+      MQTT_TLS_KEY: /run/mqtt-certs/client.key
+    volumes:
+      - ../tls/generated/ca/ca.crt:/run/mqtt-certs/ca.crt:ro
+      - ../tls/generated/fog-workers/fog-workers.crt:/run/mqtt-certs/client.crt:ro
+      - ../tls/generated/fog-workers/fog-workers.key:/run/mqtt-certs/client.key:ro
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    depends_on:
+      fog-sentinel1:
+        condition: service_healthy
     networks:
       - fog_network
       - chirpstack-docker_lorawan
@@ -38,6 +84,27 @@ services:
     restart: always
     env_file:
       - ./config/config-ru864.env
+    environment:
+      MQTT_USERNAME: fog-ru864
+      MQTT_PASSWORD: ${FOG_RU864_MQTT_PASSWORD:?run setup-security.ps1 first}
+      REDIS_SENTINELS: fog-sentinel1:26379,fog-sentinel2:26379,fog-sentinel3:26379
+      REDIS_MASTER_NAME: sensiot-fog
+      REDIS_PASSWORD: ${FOG_REDIS_PASSWORD:?run setup-security.ps1 first}
+      MQTT_TLS_ENABLED: "true"
+      MQTT_TLS_CA: /run/mqtt-certs/ca.crt
+      MQTT_TLS_CERT: /run/mqtt-certs/client.crt
+      MQTT_TLS_KEY: /run/mqtt-certs/client.key
+    volumes:
+      - ../tls/generated/ca/ca.crt:/run/mqtt-certs/ca.crt:ro
+      - ../tls/generated/fog-workers/fog-workers.crt:/run/mqtt-certs/client.crt:ro
+      - ../tls/generated/fog-workers/fog-workers.key:/run/mqtt-certs/client.key:ro
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    depends_on:
+      fog-sentinel1:
+        condition: service_healthy
     networks:
       - fog_network
       - chirpstack-docker_lorawan
@@ -50,25 +117,215 @@ services:
     restart: always
     env_file:
       - ./config/config-in865.env
+    environment:
+      MQTT_USERNAME: fog-in865
+      MQTT_PASSWORD: ${FOG_IN865_MQTT_PASSWORD:?run setup-security.ps1 first}
+      REDIS_SENTINELS: fog-sentinel1:26379,fog-sentinel2:26379,fog-sentinel3:26379
+      REDIS_MASTER_NAME: sensiot-fog
+      REDIS_PASSWORD: ${FOG_REDIS_PASSWORD:?run setup-security.ps1 first}
+      MQTT_TLS_ENABLED: "true"
+      MQTT_TLS_CA: /run/mqtt-certs/ca.crt
+      MQTT_TLS_CERT: /run/mqtt-certs/client.crt
+      MQTT_TLS_KEY: /run/mqtt-certs/client.key
+    volumes:
+      - ../tls/generated/ca/ca.crt:/run/mqtt-certs/ca.crt:ro
+      - ../tls/generated/fog-workers/fog-workers.crt:/run/mqtt-certs/client.crt:ro
+      - ../tls/generated/fog-workers/fog-workers.key:/run/mqtt-certs/client.key:ro
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    depends_on:
+      fog-sentinel1:
+        condition: service_healthy
     networks:
       - fog_network
       - chirpstack-docker_lorawan
 
+  fog-redis1:
+    image: redis:7.4-alpine
+    user: "999:1000"
+    restart: always
+    entrypoint: ["/bin/sh", "/opt/sensiot/redis-entrypoint.sh"]
+    environment:
+      REDIS_INITIAL_ROLE: master
+      REDIS_ANNOUNCE_HOST: fog-redis1
+      REDIS_PASSWORD: ${FOG_REDIS_PASSWORD:?run setup-security.ps1 first}
+    volumes:
+      - fog_state_data:/data
+      - ./config/redis/redis-entrypoint.sh:/opt/sensiot/redis-entrypoint.sh:ro
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    networks:
+      - fog_network
+    healthcheck:
+      test: ["CMD-SHELL", "REDISCLI_AUTH=\"$${REDIS_PASSWORD}\" redis-cli ping | grep PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  fog-redis2:
+    image: redis:7.4-alpine
+    user: "999:1000"
+    restart: always
+    entrypoint: ["/bin/sh", "/opt/sensiot/redis-entrypoint.sh"]
+    environment:
+      REDIS_INITIAL_ROLE: replica
+      REDIS_INITIAL_MASTER_HOST: fog-redis1
+      REDIS_ANNOUNCE_HOST: fog-redis2
+      REDIS_PASSWORD: ${FOG_REDIS_PASSWORD:?run setup-security.ps1 first}
+    volumes:
+      - fog_redis2_data:/data
+      - ./config/redis/redis-entrypoint.sh:/opt/sensiot/redis-entrypoint.sh:ro
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    networks:
+      - fog_network
+    healthcheck:
+      test: ["CMD-SHELL", "REDISCLI_AUTH=\"$${REDIS_PASSWORD}\" redis-cli ping | grep PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  fog-redis3:
+    image: redis:7.4-alpine
+    user: "999:1000"
+    restart: always
+    entrypoint: ["/bin/sh", "/opt/sensiot/redis-entrypoint.sh"]
+    environment:
+      REDIS_INITIAL_ROLE: replica
+      REDIS_INITIAL_MASTER_HOST: fog-redis1
+      REDIS_ANNOUNCE_HOST: fog-redis3
+      REDIS_PASSWORD: ${FOG_REDIS_PASSWORD:?run setup-security.ps1 first}
+    volumes:
+      - fog_redis3_data:/data
+      - ./config/redis/redis-entrypoint.sh:/opt/sensiot/redis-entrypoint.sh:ro
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    networks:
+      - fog_network
+    healthcheck:
+      test: ["CMD-SHELL", "REDISCLI_AUTH=\"$${REDIS_PASSWORD}\" redis-cli ping | grep PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  fog-sentinel1:
+    image: redis:7.4-alpine
+    user: "999:1000"
+    restart: always
+    entrypoint: ["/bin/sh", "/opt/sensiot/sentinel-entrypoint.sh"]
+    environment:
+      SENTINEL_ANNOUNCE_HOST: fog-sentinel1
+      REDIS_PASSWORD: ${FOG_REDIS_PASSWORD:?run setup-security.ps1 first}
+    volumes:
+      - fog_sentinel1_data:/data
+      - ./config/redis/sentinel-entrypoint.sh:/opt/sensiot/sentinel-entrypoint.sh:ro
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    networks:
+      - fog_network
+    depends_on:
+      fog-redis1: {condition: service_healthy}
+      fog-redis2: {condition: service_healthy}
+      fog-redis3: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD-SHELL", "REDISCLI_AUTH=\"$${REDIS_PASSWORD}\" redis-cli -p 26379 SENTINEL ckquorum sensiot-fog | grep OK"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  fog-sentinel2:
+    image: redis:7.4-alpine
+    user: "999:1000"
+    restart: always
+    entrypoint: ["/bin/sh", "/opt/sensiot/sentinel-entrypoint.sh"]
+    environment:
+      SENTINEL_ANNOUNCE_HOST: fog-sentinel2
+      REDIS_PASSWORD: ${FOG_REDIS_PASSWORD:?run setup-security.ps1 first}
+    volumes:
+      - fog_sentinel2_data:/data
+      - ./config/redis/sentinel-entrypoint.sh:/opt/sensiot/sentinel-entrypoint.sh:ro
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    networks:
+      - fog_network
+    depends_on:
+      fog-redis1: {condition: service_healthy}
+      fog-redis2: {condition: service_healthy}
+      fog-redis3: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD-SHELL", "REDISCLI_AUTH=\"$${REDIS_PASSWORD}\" redis-cli -p 26379 SENTINEL ckquorum sensiot-fog | grep OK"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  fog-sentinel3:
+    image: redis:7.4-alpine
+    user: "999:1000"
+    restart: always
+    entrypoint: ["/bin/sh", "/opt/sensiot/sentinel-entrypoint.sh"]
+    environment:
+      SENTINEL_ANNOUNCE_HOST: fog-sentinel3
+      REDIS_PASSWORD: ${FOG_REDIS_PASSWORD:?run setup-security.ps1 first}
+    volumes:
+      - fog_sentinel3_data:/data
+      - ./config/redis/sentinel-entrypoint.sh:/opt/sensiot/sentinel-entrypoint.sh:ro
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    networks:
+      - fog_network
+    depends_on:
+      fog-redis1: {condition: service_healthy}
+      fog-redis2: {condition: service_healthy}
+      fog-redis3: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD-SHELL", "REDISCLI_AUTH=\"$${REDIS_PASSWORD}\" redis-cli -p 26379 SENTINEL ckquorum sensiot-fog | grep OK"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
   #############################################################################
   #                           Load Balancer (HAProxy)                         #
   #############################################################################
-  haproxy:
+  fog-haproxy:
       image: haproxy:2.6
       restart: always
       networks:
-        - fog_network
-        - chirpstack-docker_lorawan
+        fog_network:
+          aliases:
+            - fog-haproxy
+        chirpstack-docker_lorawan:
+          aliases:
+            - fog-haproxy
       volumes:
         - ./config/haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
       ports:
-        - "2883:1883"  # Expose central broker on host port 2883
+        - "2883:8883"  # TLS-only central MQTT endpoint
+      read_only: true
+      tmpfs:
+        - /var/lib/haproxy
+        - /run
+      cap_drop: [ALL]
+      security_opt: [no-new-privileges:true]
       healthcheck:
-        test: [ "CMD", "nc", "-z", "localhost", "1883" ]
+        test: [ "CMD", "haproxy", "-c", "-f", "/usr/local/etc/haproxy/haproxy.cfg" ]
         interval: 10s
         timeout: 5s
         retries: 3
@@ -83,11 +340,19 @@ services:
     environment:
         - "EMQX_NAME=emqx"
         - "EMQX_HOST=node1.emqx.io"
-        - "EMQX_NODE__COOKIE=mystrongsecretcookie123"
+        - "EMQX_NODE__COOKIE=${FOG_EMQX_COOKIE:?run setup-security.ps1 first}"
         - "EMQX_CLUSTER__DISCOVERY_STRATEGY=static"
         - "EMQX_CLUSTER__STATIC__SEEDS=emqx@node1.emqx.io,emqx@node2.emqx.io,emqx@node3.emqx.io"
+        - "EMQX_ALLOW_ANONYMOUS=false"
     volumes:
       - emqx1_data:/opt/emqx/data
+      - ./config/emqx/emqx.conf:/opt/emqx/etc/emqx.conf:ro
+      - ./config/emqx/acl.conf:/opt/emqx/etc/acl.conf:ro
+      - ../tls/generated/ca/ca.crt:/opt/emqx/etc/certs/ca.crt:ro
+      - ../tls/generated/fog-server/fog-server.crt:/opt/emqx/etc/certs/server.crt:ro
+      - ../tls/generated/fog-server/fog-server.key:/opt/emqx/etc/certs/server.key:ro
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
     networks:
       fog_network:
         aliases:
@@ -98,7 +363,7 @@ services:
         timeout: 25s
         retries: 5
     ports:
-      - "18084:18083"  # Dashboard mapping
+      - "127.0.0.1:18084:18083"
     deploy:
       resources:
         limits:
@@ -114,12 +379,20 @@ services:
           - node2.emqx.io
     volumes:
       - emqx2_data:/opt/emqx/data
+      - ./config/emqx/emqx.conf:/opt/emqx/etc/emqx.conf:ro
+      - ./config/emqx/acl.conf:/opt/emqx/etc/acl.conf:ro
+      - ../tls/generated/ca/ca.crt:/opt/emqx/etc/certs/ca.crt:ro
+      - ../tls/generated/fog-server/fog-server.crt:/opt/emqx/etc/certs/server.crt:ro
+      - ../tls/generated/fog-server/fog-server.key:/opt/emqx/etc/certs/server.key:ro
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
     environment:
       - "EMQX_NAME=emqx"
       - "EMQX_HOST=node2.emqx.io"
-      - "EMQX_NODE__COOKIE=mystrongsecretcookie123"
+      - "EMQX_NODE__COOKIE=${FOG_EMQX_COOKIE:?run setup-security.ps1 first}"
       - "EMQX_CLUSTER__DISCOVERY_STRATEGY=static"
       - "EMQX_CLUSTER__STATIC__SEEDS=emqx@node1.emqx.io,emqx@node2.emqx.io,emqx@node3.emqx.io"
+      - "EMQX_ALLOW_ANONYMOUS=false"
     healthcheck:
         test: [ "CMD", "/opt/emqx/bin/emqx_ctl", "status" ]
         interval: 5s
@@ -140,12 +413,20 @@ services:
           - node3.emqx.io
     volumes:
       - emqx3_data:/opt/emqx/data
+      - ./config/emqx/emqx.conf:/opt/emqx/etc/emqx.conf:ro
+      - ./config/emqx/acl.conf:/opt/emqx/etc/acl.conf:ro
+      - ../tls/generated/ca/ca.crt:/opt/emqx/etc/certs/ca.crt:ro
+      - ../tls/generated/fog-server/fog-server.crt:/opt/emqx/etc/certs/server.crt:ro
+      - ../tls/generated/fog-server/fog-server.key:/opt/emqx/etc/certs/server.key:ro
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
     environment:
       - "EMQX_NAME=emqx"
       - "EMQX_HOST=node3.emqx.io"
-      - "EMQX_NODE__COOKIE=mystrongsecretcookie123"
+      - "EMQX_NODE__COOKIE=${FOG_EMQX_COOKIE:?run setup-security.ps1 first}"
       - "EMQX_CLUSTER__DISCOVERY_STRATEGY=static"
       - "EMQX_CLUSTER__STATIC__SEEDS=emqx@node1.emqx.io,emqx@node2.emqx.io,emqx@node3.emqx.io"
+      - "EMQX_ALLOW_ANONYMOUS=false"
     healthcheck:
         test: [ "CMD", "/opt/emqx/bin/emqx_ctl", "status" ]
         interval: 5s

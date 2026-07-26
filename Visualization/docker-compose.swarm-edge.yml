@@ -1,0 +1,14 @@
+networks:
+  sensiot-edge:
+    external: true
+    name: sensiot-edge
+
+services:
+  prometheus:
+    networks:
+      chirpstack-docker_lorawan:
+      fog-nodes_fog_network:
+      the-sensiot-framework_backend:
+      sensiot-edge:
+        aliases:
+          - prometheus

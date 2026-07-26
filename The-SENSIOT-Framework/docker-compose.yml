@@ -1,9 +1,16 @@
-version: '3.3'
-
 networks:
   backend:
   fog-nodes_fog_network:  # Shared network for SensIoT and Fog Nodes
     external: true  # Ensures it connects to the Fog Node network
+
+x-app-hardening: &app-hardening
+  read_only: true
+  tmpfs:
+    - /tmp
+  cap_drop:
+    - ALL
+  security_opt:
+    - no-new-privileges:true
 
 services:
   #############################
@@ -11,9 +18,11 @@ services:
   #############################
   sensiot_mqtt_broker:
     image: eclipse-mosquitto:latest
+    profiles:
+      - legacy-mqtt
     restart: unless-stopped
     ports:
-      - "1882:1883"  # Expose MQTT for external testing (optional)
+      - "127.0.0.1:1882:1883"
     volumes:
       - ./config/mosquitto:/mosquitto/config
     networks:
@@ -25,7 +34,7 @@ services:
   #############################
   memcached:
     image: memcached:latest
-    command: memcached -m 128 -vv  # Limits memory usage to 128MB
+    command: memcached -m 128
     restart: on-failure
     deploy:
       resources:
@@ -38,8 +47,6 @@ services:
   memcached_exporter:
     image: prom/memcached-exporter
     restart: unless-stopped
-    ports:
-      - "9150:9150"
     command:
       - "--memcached.address=memcached:11211"
     depends_on:
@@ -53,17 +60,19 @@ services:
   #############################
   influxdb:
     image: influxdb:latest
+    container_name: sensiot_influxdb
     restart: on-failure
     environment:
       DOCKER_INFLUXDB_INIT_MODE: setup
-      DOCKER_INFLUXDB_INIT_USERNAME: root
-      DOCKER_INFLUXDB_INIT_PASSWORD: mystrongpassword123
+      DOCKER_INFLUXDB_INIT_USERNAME: ${SENSIOT_INFLUX_USERNAME:?run setup-security.ps1 first}
+      DOCKER_INFLUXDB_INIT_PASSWORD: ${SENSIOT_INFLUX_PASSWORD:?run setup-security.ps1 first}
       DOCKER_INFLUXDB_INIT_ORG: sensiot_org
       DOCKER_INFLUXDB_INIT_BUCKET: sensiot
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${SENSIOT_INFLUX_TOKEN:?run setup-security.ps1 first}
     volumes:
       - influxdb_data:/var/lib/influxdb2
     ports:
-      - "8086:8086"
+      - "127.0.0.1:8086:8086"
     networks:
       - backend
       - fog-nodes_fog_network
@@ -73,6 +82,8 @@ services:
   #############################
   chronograf:
     image: chronograf:latest
+    profiles:
+      - legacy-ui
     restart: on-failure
     depends_on:
       - influxdb
@@ -81,13 +92,15 @@ services:
       - backend
       - fog-nodes_fog_network
     ports:
-      - "8888:8888"
+      - "127.0.0.1:8888:8888"
 
   #############################
   # Grafana UI                #
   #############################
   grafana:
     image: grafana/grafana:latest
+    profiles:
+      - standalone-ui
     restart: on-failure
     depends_on:
       - prometheus
@@ -100,13 +113,16 @@ services:
       - backend
       - fog-nodes_fog_network
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
 
   #############################
   # Prometheus Service        #
   #############################
   prometheus:
     image: prom/prometheus:latest
+    container_name: sensiot_prometheus
+    profiles:
+      - standalone-monitoring
     restart: on-failure
     volumes:
       - ./config/prometheus:/etc/prometheus/
@@ -116,13 +132,15 @@ services:
       - backend
       - fog-nodes_fog_network
     ports:
-      - "9090:9090"
+      - "127.0.0.1:9090:9090"
 
   #############################
   # Local Manager             #
   #############################
   local_manager:
     image: sensiot_image
+    profiles:
+      - local-manager
     restart: on-failure
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -140,12 +158,16 @@ services:
   # Memcache Writer           #
   #############################
   json_memcache_writer:
+    <<: *app-hardening
     image: sensiot_image
-    restart: on-failure
+    restart: unless-stopped
     depends_on:
       - memcached
     volumes:
       - ./config/sensiot.json:/app/sensiot.json
+      - ../tls/generated/ca/ca.crt:/run/mqtt-certs/ca.crt:ro
+      - ../tls/generated/sensiot/sensiot.crt:/run/mqtt-certs/client.crt:ro
+      - ../tls/generated/sensiot/sensiot.key:/run/mqtt-certs/client.key:ro
     networks:
       - backend
       - fog-nodes_fog_network
@@ -153,11 +175,18 @@ services:
     environment:
       CONFIG: ./sensiot.json
       SERVICE: "sensor_data_memcache_writer"
+      MQTT_USERNAME: sensiot
+      MQTT_PASSWORD: ${SENSIOT_MQTT_PASSWORD:?run setup-security.ps1 first}
+      MQTT_TLS_ENABLED: "true"
+      MQTT_TLS_CA: /run/mqtt-certs/ca.crt
+      MQTT_TLS_CERT: /run/mqtt-certs/client.crt
+      MQTT_TLS_KEY: /run/mqtt-certs/client.key
 
   #############################
   # InfluxDB Writer           #
   #############################
   influxdb_writer:
+    <<: *app-hardening
     image: sensiot_image
     restart: on-failure
     depends_on:
@@ -171,15 +200,15 @@ services:
     environment:
       CONFIG: ./sensiot.json
       SERVICE: "influxdb_writer"
+      INFLUX_TOKEN: ${SENSIOT_INFLUX_TOKEN:?run setup-security.ps1 first}
 
   #############################
   # Prometheus Writer         #
   #############################
   prometheus_writer:
+    <<: *app-hardening
     image: sensiot_image
     restart: on-failure
-    depends_on:
-      - prometheus
     volumes:
       - ./config/sensiot.json:/app/sensiot.json
     networks:
@@ -189,13 +218,12 @@ services:
     environment:
       CONFIG: ./sensiot.json
       SERVICE: "prometheus_writer"
-    ports:
-      - "8000:8000"
 
   #############################
   # Web Interface             #
   #############################
   web:
+    <<: *app-hardening
     image: sensiot_image
     restart: on-failure
     depends_on:
@@ -206,11 +234,12 @@ services:
       - backend
       - fog-nodes_fog_network
     ports:
-      - "5001:5000"
+      - "127.0.0.1:5001:5000"
     tty: true
     environment:
       CONFIG: ./sensiot.json
       SERVICE: "web"
+      SENSIOT_WEB_API_KEY: ${SENSIOT_WEB_API_KEY:?run setup-security.ps1 first}
 
 volumes:
   influxdb_data:

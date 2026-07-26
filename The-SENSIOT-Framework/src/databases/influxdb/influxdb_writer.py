@@ -2,6 +2,7 @@ import time
 import logging
 import threading
 import json
+import os
 from databases.influxdb.influxdb_converter import InfluxDBConverter
 from influxdb_client import InfluxDBClient
 from influxdb_client.client.write_api import SYNCHRONOUS
@@ -17,16 +18,16 @@ class InfluxDBWriter(threading.Thread):
         self.queue = queue
         self.config = config
 
-        logger.debug(f"Complete configuration passed to InfluxDBWriter: {self.config}")
-
         self.influxdb_url = f"http://{self.config.get('ip', '127.0.0.1')}:{self.config.get('port', 8086)}"
-        self.influxdb_token = self.config.get("token")
+        self.influxdb_token = os.getenv("INFLUX_TOKEN") or self.config.get("token")
         self.influxdb_org = self.config.get("org")
         self.influxdb_bucket = self.config.get("bucket")
         self.influxdb_measurements = self.config.get("measurements")
 
         logger.debug(
-            f"InfluxDB Config - URL: {self.influxdb_url}, Token: {self.influxdb_token}, Org: {self.influxdb_org}, Bucket: {self.influxdb_bucket}, Measurements: {self.influxdb_measurements}")
+            f"InfluxDB Config - URL: {self.influxdb_url}, Org: {self.influxdb_org}, "
+            f"Bucket: {self.influxdb_bucket}, Measurements: {self.influxdb_measurements}"
+        )
 
         if not self.influxdb_token or not self.influxdb_org or not self.influxdb_bucket:
             logger.error("InfluxDB configuration is incomplete. Ensure 'token', 'org', and 'bucket' are specified.")

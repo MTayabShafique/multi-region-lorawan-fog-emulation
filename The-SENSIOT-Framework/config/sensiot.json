@@ -19,8 +19,8 @@
   },
   "services": {
     "mqtt": {
-      "broker": "fog-nodes_haproxy_1",
-      "port": 1883,
+      "broker": "fog-haproxy",
+      "port": 8883,
       "topics": {
         "processed_topic": "central/data",
          "downlink_topic_template": "application/{application_id}/device/{device_id}/command/down"
@@ -42,7 +42,7 @@
     "influxdb_writer": {
       "ip": "influxdb",
       "port": 8086,
-      "token": "TP7AY_9YOYGHiTMyF26KH_CBPqmWVkRYQ6c_nsUwveu0sYdKA7jcigpnbLI63l8x26aldRfgV5TRcfMCKwFbtQ==",
+      "token": "",
       "org": "sensiot_org",
       "bucket": "sensiot",
       "measurements": "Temperature & Humidity"
@@ -56,4 +56,3 @@
     }
   }
 }
-

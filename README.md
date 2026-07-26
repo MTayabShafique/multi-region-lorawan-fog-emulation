@@ -15,7 +15,7 @@ This thesis explores how LoRaWAN networks can be integrated with fog computing t
 - **Data Layer:** SensIoT (MQTT-based) with InfluxDB 2.x, Prometheus and Memcached buffer
 - **Visualization:** Grafana
 - **Simulation:** LWN Simulator (simulated devices & gateways)
-- **Containerization:** Docker Compose
+- **Containerization:** Docker Compose and Docker Swarm
 
 ## Project Structure
 
@@ -24,55 +24,130 @@ code/
 ├── chirpstack-docker/        # ChirpStack Setup
 ├── fog-nodes/                # Regional Fog Nodes Setup
 ├── The-SENSIOT-Framework/    # Modified SensIoT stack
-├── LoRaWANSimulator/         # LWN simulator
+├── LoRaWAN Simulator/       # LWN simulator
 ├── Visualization/            # Grafana dashboards
 └── README.md
 ```
 
 ## How to Run the System
 
-### 1. Start ChirpStack Stack
-```bash
-cd chirpstack-docker
-docker-compose build automated-metrics
+### 1. Generate Local Secrets And MQTT Certificates
+Run this once from the repository root. Existing database credentials are
+preserved when the ignored `.env` files already exist.
+
+```powershell
+Set-ExecutionPolicy -Scope Process Bypass
+.\setup-security.ps1
+.\generate-mqtt-certificates.ps1
+```
+
+Do not copy real credentials into the committed `.env.example` files. The
+security script generates installation-specific values in ignored `.env`
+files and writes each shared token to every component that needs it. Keep
+those generated files while their Docker volumes exist: InfluxDB initialization
+credentials are applied only when a new volume is created. If an `.env` file is
+lost while its database volume remains, recover or recreate the database
+authorization instead of inventing a replacement token.
+
+The certificate script creates a private CA, two broker certificates, and
+role-specific client certificates under the ignored `tls/generated/`
+directory. It never replaces the CA automatically. Back up
+`tls/generated/ca/ca.key` offline; the CA key is not mounted into containers.
+See `tls/README.md` for leaf-certificate rotation.
+
+### 2. Start ChirpStack Stack
+```powershell
+cd .\chirpstack-docker
+docker compose build automated-metrics
 docker compose up -d
 ```
 
-### 2. Start Fog Node System
-```bash
-cd ../fog-nodes
-docker build -t myorg/fog-node:latest .
-docker-compose build
-docker-compose up -d
+### 3. Start Fog Node System
+```powershell
+cd .\fog-nodes
+docker compose build
+docker compose up -d
 ```
 
-### 3. Start SensIoT Stack
-```bash
-cd ../The-SENSIOT-Framework
+For a local high-availability fog test with two workers per region:
+
+```powershell
+docker compose -f docker-compose.yml -f docker-compose.ha.yml up -d --build
+```
+
+### 4. Apply EMQX Security
+After both EMQX clusters are healthy, provision MQTT users, ACL-backed bridge
+credentials, and dashboard passwords:
+
+```powershell
+cd ..
+.\apply-security.ps1
+```
+
+MQTT is TLS-only. HAProxy passes encrypted connections through to EMQX on
+`8883`, EMQX requires a trusted client certificate, and MQTT
+username/password authentication plus ACL authorization remain enabled.
+
+### 5. Start SensIoT Stack
+```powershell
+cd .\The-SENSIOT-Framework
 docker build -t sensiot_image .
-docker-compose build
-docker-compose up -d
+docker compose up -d
 ```
 
-### 4. Start Visualization Stack
+### 6. Start Visualization Stack
+```powershell
+cd .\Visualization
+docker compose up -d
+```
+
+### 7. Start Simulator
+```powershell
+cd ".\LoRaWAN Simulator"
+
+# Build once and run one regional simulator runtime.
+./run-lwn-simulator.ps1 -Region eu868 -Build
+
+# Start additional regional runtimes from the same source checkout.
+./run-lwn-simulator.ps1 -Region us915_0
+./run-lwn-simulator.ps1 -Region in865
+./run-lwn-simulator.ps1 -Region ru864
+```
+
+The simulator launcher uses `LWN-Simulator` as the canonical source tree and
+runs its single built binary from an isolated `runtime/<region>` working
+directory containing the selected regional configuration and state. This avoids
+maintaining duplicate source trees or executable copies.
+
+### Optional SensIoT Standalone Grafana
+
+The preferred dashboard entry point is the centralized Visualization Grafana at
+`http://localhost:3005`. SensIoT's own Grafana is now optional and can be started
+only when you need the standalone SensIoT UI:
+
 ```bash
-cd ../Visualization
-docker-compose up -d
+cd .\The-SENSIOT-Framework
+docker compose --profile standalone-ui up -d grafana
 ```
 
-### 5. Start Simulator
-```bash
-cd ../LoRaWANSimulator
-cd LWN-Simulator_eu868
-# Install dependencies
-make install-dep
-# Build simulator
-make build
-# Run simulator
-./bin/lwnsimulator  # For Linux
+Mosquitto, Chronograf, and the separate SensIoT Prometheus instance are legacy
+opt-in services. The normal stack uses the fog MQTT cluster and centralized
+Prometheus/Grafana.
 
-# Repeat above steps for each LWN-Simulator_{Region}
-```
+## Multi-Host Docker Swarm
+
+The production-style fog deployment is defined in
+`swarm/fog-stack.yml`. It runs two workers per region, distributes MQTT messages
+through shared subscriptions, stores credentials as Docker Secrets, and places
+the three EMQX members on separate labeled Linux nodes. A Prometheus-driven
+controller can scale each region independently using message rate and durable
+outbox backlog, with cooldown and stabilization controls. See
+`swarm/README.md` for cluster preparation, image publishing, deployment, and
+failure-model details.
+
+The Swarm stack is intentionally separate from the local Docker Compose setup.
+This allows Windows development to continue unchanged while experiments run
+against three Linux hosts.
 
 ## Access Web Interfaces
 
@@ -93,20 +168,55 @@ make build
 
 ### Fog Nodes
 - **EMQX Dashboard:** http://localhost:18084
+- **MQTT mTLS endpoint:** `localhost:2883`
+
+Fog aggregation state is stored by a three-node Redis replication group. Three
+Redis Sentinels monitor the group with quorum 2, promote a replica when the
+master becomes unavailable, and direct fog workers to the current master. ChirpStack `deduplicationId` values are
+retained for 24 hours so a redelivered uplink is counted only once. Redis and
+Sentinel require authentication, remain internal to `fog-nodes_fog_network`,
+and do not publish host ports.
+
+Redis replication is asynchronous. Sentinel improves availability but cannot
+guarantee that every acknowledged write survives an abrupt master failure.
+`min-replicas-to-write 1` limits the risk by stopping writes when the master has
+no sufficiently current replica.
+
+Regional workers use `$share/fog-<region>/region/<region>/#` subscriptions at
+QoS 1. Multiple replicas therefore divide a region's messages among themselves,
+while Redis combines their updates into one region-wide aggregation window.
+Each replica derives its MQTT client ID from its container hostname.
+
+Useful optional fog-worker settings are:
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `DEDUPLICATION_TTL` | `86400` | Seconds to remember an uplink ID |
+| `OUTBOX_VISIBILITY_TIMEOUT` | `30` | Seconds before an unacknowledged publish can be retried |
+| `OUTBOX_POLL_INTERVAL` | `1` | Seconds between outbox checks |
+| `PUBLISH_RETRY_DELAY` | `5` | Delay after a failed central publish |
+| `FOG_SHARED_GROUP` | `fog-<region>` | MQTT shared-subscription group |
+| `FOG_INSTANCE_ID` | container hostname | Stable suffix for the MQTT client ID |
+| `REDIS_SENTINELS` | three local Sentinels | Comma-separated `host:port` endpoints |
+| `REDIS_MASTER_NAME` | `sensiot-fog` | Sentinel monitored-master name |
 
 ### SensIoT Framework
 - **InfluxDB:** http://localhost:8086
-- **Grafana:** http://localhost:3000
-- **Prometheus:** http://localhost:9090/targets
+- **Web API:** http://localhost:5001
 
-> Default credentials are usually in the `.env` files or official documentation.
+The Web API health endpoint is public at `/health`. All data endpoints require
+the `X-API-Key` header using `SENSIOT_WEB_API_KEY` from the ignored
+`The-SENSIOT-Framework/.env` file.
+
+Generated credentials are stored only in ignored `.env` files. Generated
+certificates and private keys are stored only in ignored `tls/generated/`.
 
 ## Docker Networks
 
 | Component        | Docker Network Name                  |
 |------------------|--------------------------------------|
 | ChirpStack       | `chirpstack-docker_lorawan`          |
-| Fog Nodes        | `fog-nodes_fog-netwrok`              |
+| Fog Nodes        | `fog-nodes_fog_network`               |
 | SensIoT Internal | `the-sensiot-framework_backend`      |
 
 ---
@@ -169,6 +279,23 @@ This README provides complete instructions to set up and integrate **LWN Simulat
    - (Optional) Set location via the map or coordinates
 
 4. Click **Save**
+
+#### Configure the Simulator Gateway Bridge
+
+After creating the virtual gateway, open **Gateway Bridge** from the simulator
+sidebar and enter the address and UDP port for the simulator's region:
+
+| Region | Gateway Bridge address | Gateway Bridge port |
+|--------|------------------------|---------------------|
+| EU868 | `127.0.0.1` | `1700` |
+| US915_0 | `127.0.0.1` | `1701` |
+| IN865 | `127.0.0.1` | `1703` |
+| RU864 | `127.0.0.1` | `1704` |
+
+Click **Save** after entering both values. The simulators run directly on
+Windows, while Docker Desktop publishes each ChirpStack Gateway Bridge UDP port
+to the Windows host. Therefore, `127.0.0.1` is the correct address for this
+setup.
 
 ---
 
@@ -342,6 +469,10 @@ Uplink messages from LWN Simulator should now be visible in ChirpStack.
 
 # Gateway Bridge Configuration (**EMQX Dashboard (ChirpStack):** http://localhost:18083)
 
+The bridge is created and updated automatically by `apply-security.ps1`. The
+settings below document the resulting configuration and should not normally be
+entered manually.
+
 This describes the minimal settings needed to bridge local MQTT messages to a remote MQTT broker.
 
 ## Basic Bridge Settings
@@ -349,12 +480,12 @@ This describes the minimal settings needed to bridge local MQTT messages to a re
 | Field                   | Value                            | Description                                                   |
 |-------------------------|----------------------------------|---------------------------------------------------------------|
 | **Name**               | `gateway-bridge`                 | A descriptive name for this gateway bridge.                  |
-| **MQTT Broker**         | `fog-nodes_haproxy_1:1883`       | Hostname (or IP) and port of the remote MQTT broker.         |
+| **MQTT Broker**         | `fog-haproxy:8883`                | Internal TLS passthrough endpoint for the fog broker.        |
 | **MQTT Version**        | `v3.1.1`                         | MQTT protocol version.                                       |
 | **Keep Alive**          | `300 (seconds)`                  | Interval at which the client PINGs the broker.               |
 | **Message Retry Interval** | `15 (seconds)`                | Retry interval for message delivery failures.                |
 | **Clean start**         | `Enabled`                        | Clear session state on reconnect.                            |
-| **Enable TLS**          | `Disabled`                       | Toggle TLS if secure connections are required.               |
+| **Enable TLS**          | `Enabled (verified mTLS)`        | Verifies the fog broker and presents the bridge certificate. |
 | **Bridge Mode**         | `Disabled`                       | Controls dynamic bridging rules (set to your needs).         |
 
 ## Egress Setup
@@ -364,11 +495,8 @@ This describes the minimal settings needed to bridge local MQTT messages to a re
 | **Egress**      | `Enabled`                                     | Forwards messages from the local broker to the remote broker.                 |
 | **Local Topic** | `application/+/device/+/event/up`            | Topic on the local broker to capture and forward.                             |
 | **Remote Topic**| `region/${payload.regionConfigId}/${topic}`   | Dynamically builds the remote topic using the payload’s `regionConfigId`.     |
-| **QoS**         | `0`                                           | “At most once” delivery.                                                      |
+| **QoS**         | `1`                                           | At-least-once delivery; fog deduplication handles redelivery.                  |
 | **Retain**      | `false`                                       | Do not retain messages on the remote broker.                                  |
 | **Payload**     | `${payload}`                                  | Forwards the entire original message payload.                                 |
 
 ---
-
-
-

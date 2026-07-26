@@ -11,4 +11,4 @@ datasources:
       tlsSkipVerify: true
       httpMode: POST
     secureJsonData:
-      token: "T7mmwHXneh5BZxOBphX8lz0-2gRVVnJ29Q7KMUcIljvqKkpqyv5o71tgE304zVLuglK_RG7ePMA4yv_F_QPZlg=="
+      token: $SENSIOT_INFLUX_TOKEN

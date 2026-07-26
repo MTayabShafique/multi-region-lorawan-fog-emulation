@@ -2,28 +2,31 @@ global:
   scrape_interval: 15s
   evaluation_interval: 15s
 
+rule_files:
+  - /etc/prometheus/rules/*.yml
+
 scrape_configs:
   # --- ChirpStack Core ---
   - job_name: 'chirpstack_core'
     static_configs:
-      - targets: ['chirpstack-docker_chirpstack_1:9108']
+      - targets: ['chirpstack:9108']
 
   # --- Gateway Bridges ---
   - job_name: 'chirpstack_gateway_bridge_eu868'
     static_configs:
-      - targets: ['chirpstack-docker_chirpstack-gateway-bridge-eu868_1:9109']
+      - targets: ['chirpstack-gateway-bridge-eu868:9109']
 
   - job_name: 'chirpstack_gateway_bridge_us915'
     static_configs:
-      - targets: ['chirpstack-docker_chirpstack-gateway-bridge-us915_1:9113']
+      - targets: ['chirpstack-gateway-bridge-us915:9113']
 
   - job_name: 'chirpstack_gateway_bridge_in865'
     static_configs:
-      - targets: ['chirpstack-docker_chirpstack-gateway-bridge-in865_1:9110']
+      - targets: ['chirpstack-gateway-bridge-in865:9110']
 
   - job_name: 'chirpstack_gateway_bridge_ru864'
     static_configs:
-      - targets: ['chirpstack-docker_chirpstack-gateway-bridge-ru864_1:9112']
+      - targets: ['chirpstack-gateway-bridge-ru864:9112']
 
   # --- cAdvisor (Container-Level Metrics) ---
   - job_name: 'cadvisor'
@@ -38,34 +41,41 @@ scrape_configs:
   # --- EMQX Node 1 ---
   - job_name: 'emqx1_stats'
     static_configs:
-      - targets: ['chirpstack-docker_emqx1_1:18083']  # Container name:port
+      - targets: ['emqx1:18083']
     metrics_path: '/api/v5/prometheus/stats'
     scheme: 'http'
 
   # --- EMQX Node 2 ---
   - job_name: 'emqx2_stats'
     static_configs:
-      - targets: ['chirpstack-docker_emqx2_1:18083']
+      - targets: ['emqx2:18083']
     metrics_path: '/api/v5/prometheus/stats'
     scheme: 'http'
 
   # --- EMQX Node 3 ---
   - job_name: 'emqx3_stats'
     static_configs:
-      - targets: ['chirpstack-docker_emqx3_1:18083']
+      - targets: ['emqx3:18083']
     metrics_path: '/api/v5/prometheus/stats'
     scheme: 'http'
 
   - job_name: 'fog_nodes'
     scrape_interval: 1s
+    dns_sd_configs:
+      - names:
+          - 'fog-node-us915'
+          - 'fog-node-eu868'
+          - 'fog-node-ru864'
+          - 'fog-node-in865'
+        type: A
+        port: 8000
+        refresh_interval: 15s
+
+  - job_name: 'sensiot_writer'
+    scrape_interval: 1s
     static_configs:
-      - targets:
-          - 'fog-nodes_fog-node-us915_1:8000'
-          - 'fog-nodes_fog-node-eu868_1:8000'
-          - 'fog-nodes_fog-node-ru864_1:8000'
-          - 'fog-nodes_fog-node-in865_1:8000'
-  - job_name: 'chirpstack_simulator'
+      - targets: ['prometheus_writer:8000']
+
+  - job_name: 'sensiot_memcached'
     static_configs:
-      - targets: ['172.17.0.1:9009']
-    metrics_path: '/metrics'
-    scheme: 'http'
+      - targets: ['memcached_exporter:9150']

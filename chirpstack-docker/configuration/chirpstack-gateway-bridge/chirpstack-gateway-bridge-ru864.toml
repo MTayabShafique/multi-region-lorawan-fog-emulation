@@ -2,9 +2,12 @@
 # MQTT client configuration for gateway bridge
 [integration.mqtt.auth.generic]
 # Use the HAProxy service name (as defined in docker-compose) as the broker host
-servers = ["tcp://haproxy:1883"]
-username = ""
-password = ""
+servers = ["ssl://chirpstack-haproxy:8883"]
+username = "$GATEWAY_MQTT_USERNAME"
+password = "$GATEWAY_MQTT_PASSWORD"
+ca_cert = "/etc/chirpstack-gateway-bridge/mqtt-certs/ca.crt"
+tls_cert = "/etc/chirpstack-gateway-bridge/mqtt-certs/client.crt"
+tls_key = "/etc/chirpstack-gateway-bridge/mqtt-certs/client.key"
 
 [integration.mqtt]
 # Set topic templates using a region-specific prefix

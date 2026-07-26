@@ -19,7 +19,7 @@ class MemcacheWriter(threading.Thread):
         self.key_expiration = int(self.config.get("key_expiration", 600))
 
         self.memcache_client = memcache.Client(
-            [f"{self.memcache_host}:{self.memcache_port}"], debug=True
+            [f"{self.memcache_host}:{self.memcache_port}"], debug=False
         )
 
         logger.info(f"{self.name} initialized successfully.")
@@ -42,8 +42,13 @@ class MemcacheWriter(threading.Thread):
     def run(self):
         logger.info(f"Started: {self.name}")
 
-        if not self.__connect_memcache():
-            logger.error("Failed to connect to Memcached. Exiting.")
+        while not self.event.is_set():
+            if self.__connect_memcache():
+                break
+            logger.warning("Memcached is not ready. Retrying in 5 seconds.")
+            self.event.wait(5)
+
+        if self.event.is_set():
             return
 
         while not self.event.is_set():

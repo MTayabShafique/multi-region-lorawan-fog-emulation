@@ -1,0 +1,9 @@
+.env
+.git
+.gitignore
+.idea
+__pycache__
+*.py[cod]
+.pytest_cache
+.pytest_cache/
+tests

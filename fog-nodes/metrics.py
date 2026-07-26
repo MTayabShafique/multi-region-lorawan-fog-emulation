@@ -41,3 +41,9 @@ avg_temperature_gauge = Gauge(
 )
 
 buffer_queue_length = Gauge('buffer_queue_length', 'Current length of the buffer queue')
+
+outbox_messages_gauge = Gauge(
+    'fog_outbox_messages',
+    'Number of aggregate messages waiting in the durable Redis outbox',
+    ['region']
+)

@@ -1,4 +1,18 @@
+import os
 from datetime import datetime
+
+
+def get_secret(name, default=None):
+    """Read a value from an environment variable or its Docker secret file."""
+    value = os.getenv(name)
+    if value is not None:
+        return value
+
+    secret_path = os.getenv(f"{name}_FILE")
+    if not secret_path:
+        return default
+    with open(secret_path, "r", encoding="utf-8") as secret_file:
+        return secret_file.read().strip()
 
 def parse_iso_timestamp(ts_str):
     """
